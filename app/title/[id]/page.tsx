@@ -1,88 +1,60 @@
 'use client';
 
-import { useParams, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
+import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft, Play, Clock, Star, ChevronDown } from 'lucide-react';
 import { Header } from '../../components/Header';
+import { Spinner } from '../../components/Spinner';
 import { useWatchHistory } from '../../hooks/useWatchHistory';
-import { parseContentId, mapMovieToContent, mapTVToContent, type Content } from '../../data/content';
-import { getMovieDetails, getTVDetails, getTVSeasonDetails, type TMDBTVShow } from '../../lib/tmdb';
+import { useContentDetailsQuery } from '../../hooks/useContentDetailsQuery';
+import { useSeasonQuery } from '../../hooks/useSeasonQuery';
+import { parseContentId } from '../../data/content';
 
 export default function DetailsPage() {
   const params = useParams<{ id: string }>();
   const id = params.id;
   const router = useRouter();
   const { updateProgress } = useWatchHistory();
-  const [content, setContent] = useState<Content | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(false);
   const [selectedEpisode, setSelectedEpisode] = useState<string | null>(null);
-  const [selectedSeason, setSelectedSeason] = useState(1);
-  const [isSeasonLoading, setIsSeasonLoading] = useState(false);
-  const [tvShowRef, setTvShowRef] = useState<TMDBTVShow | null>(null);
+  const [userSelectedSeason, setUserSelectedSeason] = useState<number | null>(null);
 
-  useEffect(() => {
-    window.scrollTo(0, 0);
+  const parsed = parseContentId(id);
+  const { data: details, isLoading, isError } = useContentDetailsQuery(id);
 
-    async function fetchDetails() {
-      const parsed = parseContentId(id);
-      if (!parsed) {
-        setError(true);
-        setIsLoading(false);
-        return;
-      }
+  // Scroll to top on mount
+  useEffect(() => { window.scrollTo(0, 0); }, [id]);
 
-      try {
-        if (parsed.type === 'movie') {
-          const movie = await getMovieDetails(parsed.tmdbId);
-          setContent(mapMovieToContent(movie));
-        } else {
-          const tv = await getTVDetails(parsed.tmdbId);
-          setTvShowRef(tv);
-          const firstSeason = tv.seasons?.find((s) => s.season_number > 0)?.season_number ?? 1;
-          setSelectedSeason(firstSeason);
-          const season = await getTVSeasonDetails(parsed.tmdbId, firstSeason).catch(() => null);
-          setContent(mapTVToContent(tv, season?.episodes));
-        }
-      } catch {
-        setError(true);
-      } finally {
-        setIsLoading(false);
-      }
-    }
+  // Derive season: user selection takes priority, otherwise use initial from query
+  const seasonToFetch = userSelectedSeason ?? details?.initialSeason ?? 1;
+  const { data: seasonContent, isFetching: isSeasonLoading } = useSeasonQuery(
+    details?.tvShow,
+    parsed?.tmdbId ?? 0,
+    seasonToFetch,
+  );
 
-    fetchDetails();
-  }, [id]);
-
-  const handleSeasonChange = async (seasonNumber: number) => {
-    if (!tvShowRef || seasonNumber === selectedSeason) return;
-    setSelectedSeason(seasonNumber);
-    setIsSeasonLoading(true);
-    try {
-      const parsed = parseContentId(id);
-      if (!parsed) return;
-      const season = await getTVSeasonDetails(parsed.tmdbId, seasonNumber).catch(() => null);
-      setContent(mapTVToContent(tvShowRef, season?.episodes));
-    } finally {
-      setIsSeasonLoading(false);
-    }
-  };
+  // Use season-specific content for TV, otherwise the initial details content
+  const content = details?.tvShow && seasonContent ? seasonContent : details?.content ?? null;
 
   if (isLoading) {
     return (
       <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-[#f6821f] border-t-transparent rounded-full animate-spin" />
+        <Spinner />
       </div>
     );
   }
 
-  if (error || !content) {
+  if (isError || !content) {
     return (
       <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
         <p className="text-[#a1a1aa]">Content not found</p>
       </div>
     );
   }
+
+  const handleSeasonChange = (seasonNumber: number) => {
+    if (seasonNumber === userSelectedSeason) return;
+    setUserSelectedSeason(seasonNumber);
+  };
 
   const handlePlay = (episodeId?: string) => {
     updateProgress(content, 0, episodeId);
@@ -213,7 +185,7 @@ export default function DetailsPage() {
                 {content.seasons && content.seasons.length > 1 && (
                   <div className="relative">
                     <select
-                      value={selectedSeason}
+                      value={seasonToFetch}
                       onChange={(e) => handleSeasonChange(Number(e.target.value))}
                       disabled={isSeasonLoading}
                       className="appearance-none bg-[#151515] border border-[#2a2a2a] text-white text-sm rounded px-3 py-1.5 pr-8 cursor-pointer hover:border-[#3a3a3a] transition-colors focus:outline-none focus:border-[#f6821f] disabled:opacity-50"

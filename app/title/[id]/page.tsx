@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import Image from 'next/image';
 import { ArrowLeft, Play, Clock, Star, ChevronDown } from 'lucide-react';
 import { Header } from '../../components/Header';
 import { Spinner } from '../../components/Spinner';
@@ -77,14 +76,12 @@ export default function DetailsPage() {
       
       <main className="pt-14">
         <div className="relative h-[50vh] min-h-[400px]">
-          <Image
+          <img
             src={content.backdrop}
             alt={content.title}
-            fill
-            className="object-cover"
-            unoptimized
+            className="w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-linear-to-t from-[#0a0a0a] via-[#0a0a0a]/50 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/50 to-transparent" />
           
           <button
             onClick={() => router.back()}
@@ -97,14 +94,11 @@ export default function DetailsPage() {
 
         <div className="max-w-6xl mx-auto px-6 -mt-32 relative z-10">
           <div className="flex flex-col md:flex-row gap-8">
-            <div className="shrink-0 hidden md:block">
-              <Image
+            <div className="flex-shrink-0 hidden md:block">
+              <img
                 src={content.poster}
                 alt={content.title}
-                width={192}
-                height={288}
                 className="w-48 h-72 object-cover rounded"
-                unoptimized
               />
             </div>
 
@@ -226,16 +220,14 @@ export default function DetailsPage() {
                           : 'bg-[#0f0f0f] border border-[#1f1f1f] hover:bg-[#151515] hover:border-[#2a2a2a]'
                       }`}
                     >
-                      <div className="shrink-0 w-8 text-center">
+                      <div className="flex-shrink-0 w-8 text-center">
                         <span className="text-sm text-[#71717a]">{index + 1}</span>
                       </div>
-                      <div className="shrink-0 relative w-32 h-18 overflow-hidden rounded">
-                        <Image
+                      <div className="flex-shrink-0 w-32 h-18 overflow-hidden rounded">
+                        <img
                           src={episode.thumbnail}
                           alt={episode.title}
-                          fill
-                          className="object-cover"
-                          unoptimized
+                          className="w-full h-full object-cover"
                         />
                       </div>
                       <div className="flex-1 min-w-0">

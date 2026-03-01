@@ -10,8 +10,6 @@ import { getMovieDetails, getTVDetails } from "../lib/tmdb";
 export function ContinueWatching() {
   const { ids } = useWatchHistory();
 
-  console.log({ ids });
-
   const queries = useQueries({
     queries: ids
       .map((id) => ({ id, parsed: parseContentId(id) }))

@@ -1,4 +1,4 @@
-const API_KEY = import.meta.env.VITE_TMDB_API_KEY;
+const TMDB_TOKEN = import.meta.env.VITE_TMDB_API_TOKEN;
 const BASE_URL = "https://api.themoviedb.org/3";
 const IMAGE_BASE = "https://image.tmdb.org/t/p";
 
@@ -23,12 +23,19 @@ export function stillUrl(path: string | null, size = "w300"): string {
 
 // Generic fetch helper
 async function tmdbFetch<T>(endpoint: string, params: Record<string, string> = {}): Promise<T> {
+  if (!TMDB_TOKEN) {
+    throw new Error("Missing TMDB token. Set VITE_TMDB_API_TOKEN in .env");
+  }
+
   const url = new URL(`${BASE_URL}${endpoint}`);
-  url.searchParams.set("api_key", API_KEY!);
   url.searchParams.set("language", "en-US");
   Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
 
-  const res = await fetch(url.toString());
+  const res = await fetch(url.toString(), {
+    headers: {
+      Authorization: `Bearer ${TMDB_TOKEN}`,
+    },
+  });
   if (!res.ok) throw new Error(`TMDB API error: ${res.status}`);
   return res.json();
 }

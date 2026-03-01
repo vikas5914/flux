@@ -3,7 +3,6 @@ import {
   type TMDBTVShow,
   type TMDBSearchResult,
   type TMDBEpisode,
-  type TMDBSeason,
   posterUrl,
   backdropUrl,
   stillUrl,

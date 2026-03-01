@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 import { Header } from '../../components/Header';
-import { useWatchHistory } from '../../hooks/useSearch';
+import { useWatchHistory } from '../../hooks/useWatchHistory';
 import { parseContentId, mapMovieToContent, mapTVToContent, type Content } from '../../data/content';
 import { getMovieDetails, getTVDetails } from '../../lib/tmdb';
 

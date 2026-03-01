@@ -19,11 +19,14 @@ export function TitleCard({ content, progress, showProgress = false }: TitleCard
         <img
           src={content.poster}
           alt={content.title}
+          width={200}
+          height={300}
+          loading="lazy"
           className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
         />
         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center">
           <div className="w-12 h-12 rounded-full bg-white/90 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-            <Play className="w-5 h-5 text-black fill-black ml-0.5" />
+            <Play aria-hidden="true" className="w-5 h-5 text-black fill-black ml-0.5" />
           </div>
         </div>
         {showProgress && progress !== undefined && progress > 0 && (

@@ -23,6 +23,11 @@
   font-family: var(--font-sans);
 }
 
+html {
+  color-scheme: dark;
+  scrollbar-gutter: stable;
+}
+
 body {
   background-color: var(--color-bg-primary);
   color: var(--color-text-primary);

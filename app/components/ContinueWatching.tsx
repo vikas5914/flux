@@ -10,27 +10,27 @@ import { getMovieDetails, getTVDetails } from "../lib/tmdb";
 export function ContinueWatching() {
   const { ids } = useWatchHistory();
 
+  console.log({ ids });
+
   const queries = useQueries({
-    queries: ids.map((id) => {
-      const parsed = parseContentId(id);
-      return {
+    queries: ids
+      .map((id) => ({ id, parsed: parseContentId(id) }))
+      .filter(({ parsed }) => parsed !== null)
+      .map(({ parsed }) => ({
         queryKey:
-          parsed?.type === "movie"
-            ? tmdbKeys.movieDetails(parsed.tmdbId)
-            : tmdbKeys.tvDetails(parsed?.tmdbId ?? 0),
+          parsed!.type === "movie"
+            ? tmdbKeys.movieDetails(parsed!.tmdbId)
+            : tmdbKeys.tvDetails(parsed!.tmdbId),
         queryFn: async () => {
-          if (!parsed) throw new Error("Invalid content ID");
-          if (parsed.type === "movie") {
-            const movie = await getMovieDetails(parsed.tmdbId);
+          if (parsed!.type === "movie") {
+            const movie = await getMovieDetails(parsed!.tmdbId);
             return mapMovieToContent(movie);
           }
-          const tv = await getTVDetails(parsed.tmdbId);
+          const tv = await getTVDetails(parsed!.tmdbId);
           return mapTVToContent(tv);
         },
-        enabled: !!parsed,
         staleTime: 1000 * 60 * 30,
-      };
-    }),
+      })),
   });
 
   const items = queries.filter((q) => q.isSuccess && q.data).map((q) => q.data!);

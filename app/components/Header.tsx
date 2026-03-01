@@ -7,18 +7,12 @@ export function Header() {
       <div className="max-w-6xl mx-auto px-6 h-full flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2">
           <Play aria-hidden="true" className="w-5 h-5 text-[#f6821f] fill-[#f6821f]" />
-          <span className="text-sm font-semibold tracking-tight">Stream</span>
+          <span className="text-sm font-semibold tracking-tight">Flux</span>
         </Link>
 
         <nav className="flex items-center gap-6">
           <Link href="/" className="text-sm text-[#a1a1aa] hover:text-white transition-colors">
             Home
-          </Link>
-          <Link href="/" className="text-sm text-[#a1a1aa] hover:text-white transition-colors">
-            Movies
-          </Link>
-          <Link href="/" className="text-sm text-[#a1a1aa] hover:text-white transition-colors">
-            Series
           </Link>
         </nav>
       </div>

@@ -3,7 +3,7 @@ import { Providers } from "./lib/query-client";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Stream - Watch Movies & Series",
+  title: "Flux - Watch Movies & Series",
   description: "Search for movies and series to start watching instantly.",
 };
 

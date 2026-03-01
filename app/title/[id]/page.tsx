@@ -5,7 +5,6 @@ import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, Play, Clock, Star, ChevronDown } from "lucide-react";
 import { Header } from "../../components/Header";
 import { Spinner } from "../../components/Spinner";
-import { useWatchHistory } from "../../hooks/useWatchHistory";
 import { useContentDetailsQuery } from "../../hooks/useContentDetailsQuery";
 import { useSeasonQuery } from "../../hooks/useSeasonQuery";
 import { parseContentId } from "../../data/content";
@@ -14,7 +13,6 @@ export default function DetailsPage() {
   const params = useParams<{ id: string }>();
   const id = params.id;
   const router = useRouter();
-  const { updateProgress } = useWatchHistory();
   const [selectedEpisode, setSelectedEpisode] = useState<string | null>(null);
   const [userSelectedSeason, setUserSelectedSeason] = useState<number | null>(null);
 
@@ -59,7 +57,6 @@ export default function DetailsPage() {
   };
 
   const handlePlay = (episodeId?: string) => {
-    updateProgress(content, 0, episodeId);
     if (episodeId) {
       // Parse season and episode from format "s{season}e{episode}"
       const match = episodeId.match(/^s(\d+)e(\d+)$/);

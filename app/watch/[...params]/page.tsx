@@ -67,7 +67,7 @@ export default function WatchPage() {
   const params = useParams<{ params: string[] }>();
   const segments = params.params;
   const router = useRouter();
-  const { updateProgress } = useWatchHistory();
+  const { addToHistory } = useWatchHistory();
   const [activeProvider, setActiveProvider] = useState(DEFAULT_PROVIDER);
 
   // Parse route segments
@@ -87,12 +87,10 @@ export default function WatchPage() {
   // Fetch content metadata via TanStack Query
   const { data: content } = useWatchContentQuery(isValid ? firstParam : undefined);
 
-  // Track watch progress once content is loaded
+  // Save to watch history when content is loaded
   useEffect(() => {
-    if (!content) return;
-    const episodeId = season && episode ? `s${season}e${episode}` : undefined;
-    updateProgress(content, 0, episodeId);
-  }, [content?.id]);
+    if (content?.id) addToHistory(content.id);
+  }, [content?.id, addToHistory]);
 
   // Redirect if invalid route
   useEffect(() => {

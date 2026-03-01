@@ -1,7 +1,7 @@
 'use client';
 
 import { TitleCard } from './TitleCard';
-import { useWatchHistory } from '../hooks/useSearch';
+import { useWatchHistory } from '../hooks/useWatchHistory';
 
 export function ContinueWatching() {
   const { getContinueWatching } = useWatchHistory();

@@ -86,7 +86,16 @@ export default function DetailsPage() {
 
   const handlePlay = (episodeId?: string) => {
     updateProgress(content, 0, episodeId);
-    router.push(`/watch/${content.id}${episodeId ? `?episode=${episodeId}` : ''}`);
+    if (episodeId) {
+      // Parse season and episode from format "s{season}e{episode}"
+      const match = episodeId.match(/^s(\d+)e(\d+)$/);
+      if (match) {
+        router.push(`/watch/${content.id}/${match[1]}/${match[2]}`);
+        return;
+      }
+    }
+    // Movie or fallback
+    router.push(`/watch/${content.id}`);
   };
 
   return (

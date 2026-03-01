@@ -81,7 +81,7 @@ export default function DetailsPage() {
           <div className="absolute top-6 inset-x-0 z-10">
             <div className="max-w-6xl mx-auto px-6">
               <button
-                onClick={handleBack}
+                onClick={() => router.back()}
                 className="flex items-center gap-2 text-white/80 hover:text-white transition-colors"
               >
                 <ArrowLeft className="w-5 h-5" />

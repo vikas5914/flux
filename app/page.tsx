@@ -1,64 +1,147 @@
-import Image from "next/image";
+'use client';
 
-export default function Home() {
+import { useState, useEffect } from 'react';
+import { Header } from './components/Header';
+import { SearchBar } from './components/SearchBar';
+import { ContinueWatching } from './components/ContinueWatching';
+import { TitleCard } from './components/TitleCard';
+import { getTrendingMovies, getTrendingTV, getTrendingAll } from './lib/tmdb';
+import { mapSearchResultToContent, type Content } from './data/content';
+import { posterUrl, extractYear } from './lib/tmdb';
+
+export default function HomePage() {
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const [trending, setTrending] = useState<Content[]>([]);
+  const [movies, setMovies] = useState<Content[]>([]);
+  const [series, setSeries] = useState<Content[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const [trendingData, moviesData, tvData] = await Promise.all([
+          getTrendingAll(),
+          getTrendingMovies(),
+          getTrendingTV(),
+        ]);
+
+        setTrending(
+          trendingData.results
+            .filter((r) => r.media_type === 'movie' || r.media_type === 'tv')
+            .slice(0, 6)
+            .map(mapSearchResultToContent)
+        );
+
+        setMovies(
+          moviesData.results.slice(0, 6).map((m) => ({
+            id: `movie-${m.id}`,
+            title: m.title,
+            type: 'movie' as const,
+            year: extractYear(m.release_date),
+            rating: Math.round(m.vote_average * 10) / 10,
+            genres: [],
+            synopsis: m.overview || '',
+            poster: posterUrl(m.poster_path),
+            backdrop: '',
+            cast: [],
+          }))
+        );
+
+        setSeries(
+          tvData.results.slice(0, 6).map((t) => ({
+            id: `tv-${t.id}`,
+            title: t.name,
+            type: 'series' as const,
+            year: extractYear(t.first_air_date),
+            rating: Math.round(t.vote_average * 10) / 10,
+            genres: [],
+            synopsis: t.overview || '',
+            poster: posterUrl(t.poster_path),
+            backdrop: '',
+            cast: [],
+          }))
+        );
+      } catch (err) {
+        console.error('Failed to fetch TMDB data:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    fetchData();
+  }, []);
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
+    <div className="min-h-screen bg-[#0a0a0a]">
+      <Header />
+      
+      <main className="pt-14">
+        <section className="min-h-[60vh] flex flex-col items-center justify-center px-6 py-32">
+          <h1 className="text-5xl sm:text-6xl md:text-7xl font-semibold tracking-tight text-white text-center mb-4">
+            Watch something
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+          <p className="text-lg text-[#a1a1aa] text-center mb-12 max-w-md">
+            Search for movies and series to start watching instantly.
           </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+          
+          <SearchBar onSearchFocus={setIsSearchFocused} />
+        </section>
+
+        {!isSearchFocused && (
+          <div className="max-w-6xl mx-auto px-6 pb-32">
+            <ContinueWatching />
+
+            {isLoading ? (
+              <div className="flex justify-center py-20">
+                <div className="w-8 h-8 border-2 border-[#f6821f] border-t-transparent rounded-full animate-spin" />
+              </div>
+            ) : (
+              <>
+                <section className="mt-16">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="h-px w-6 bg-[#f6821f]" />
+                    <h2 className="font-mono text-xs uppercase tracking-widest text-[#f6821f]">
+                      Trending Now
+                    </h2>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+                    {trending.map((content) => (
+                      <TitleCard key={content.id} content={content} />
+                    ))}
+                  </div>
+                </section>
+
+                <section className="mt-16">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="h-px w-6 bg-[#f6821f]" />
+                    <h2 className="font-mono text-xs uppercase tracking-widest text-[#f6821f]">
+                      Popular Movies
+                    </h2>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+                    {movies.map((content) => (
+                      <TitleCard key={content.id} content={content} />
+                    ))}
+                  </div>
+                </section>
+
+                <section className="mt-16">
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="h-px w-6 bg-[#f6821f]" />
+                    <h2 className="font-mono text-xs uppercase tracking-widest text-[#f6821f]">
+                      Popular Series
+                    </h2>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+                    {series.map((content) => (
+                      <TitleCard key={content.id} content={content} />
+                    ))}
+                  </div>
+                </section>
+              </>
+            )}
+          </div>
+        )}
       </main>
     </div>
   );

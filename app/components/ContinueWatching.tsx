@@ -1,11 +1,39 @@
 "use client";
 
+import { useQueries } from "@tanstack/react-query";
 import { TitleCard } from "./TitleCard";
 import { useWatchHistory } from "../hooks/useWatchHistory";
+import { tmdbKeys } from "../lib/query-keys";
+import { parseContentId, mapMovieToContent, mapTVToContent } from "../data/content";
+import { getMovieDetails, getTVDetails } from "../lib/tmdb";
 
 export function ContinueWatching() {
-  const { getContinueWatching } = useWatchHistory();
-  const items = getContinueWatching();
+  const { ids } = useWatchHistory();
+
+  const queries = useQueries({
+    queries: ids.map((id) => {
+      const parsed = parseContentId(id);
+      return {
+        queryKey:
+          parsed?.type === "movie"
+            ? tmdbKeys.movieDetails(parsed.tmdbId)
+            : tmdbKeys.tvDetails(parsed?.tmdbId ?? 0),
+        queryFn: async () => {
+          if (!parsed) throw new Error("Invalid content ID");
+          if (parsed.type === "movie") {
+            const movie = await getMovieDetails(parsed.tmdbId);
+            return mapMovieToContent(movie);
+          }
+          const tv = await getTVDetails(parsed.tmdbId);
+          return mapTVToContent(tv);
+        },
+        enabled: !!parsed,
+        staleTime: 1000 * 60 * 30,
+      };
+    }),
+  });
+
+  const items = queries.filter((q) => q.isSuccess && q.data).map((q) => q.data!);
 
   if (items.length === 0) return null;
 
@@ -19,13 +47,8 @@ export function ContinueWatching() {
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-        {items.map((item) => (
-          <TitleCard
-            key={item.content.id}
-            content={item.content}
-            progress={item.progress}
-            showProgress
-          />
+        {items.map((content) => (
+          <TitleCard key={content.id} content={content} />
         ))}
       </div>
     </section>

@@ -78,13 +78,17 @@ export default function DetailsPage() {
           <img src={content.backdrop} alt={content.title} className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-linear-to-t from-[#0a0a0a] via-[#0a0a0a]/50 to-transparent" />
 
-          <button
-            onClick={() => router.back()}
-            className="absolute top-6 left-6 flex items-center gap-2 text-white/80 hover:text-white transition-colors"
-          >
-            <ArrowLeft className="w-5 h-5" />
-            <span className="text-sm">Back</span>
-          </button>
+          <div className="absolute top-6 inset-x-0 z-10">
+            <div className="max-w-6xl mx-auto px-6">
+              <button
+                onClick={handleBack}
+                className="flex items-center gap-2 text-white/80 hover:text-white transition-colors"
+              >
+                <ArrowLeft className="w-5 h-5" />
+                <span className="text-sm">Back</span>
+              </button>
+            </div>
+          </div>
         </div>
 
         <div className="max-w-6xl mx-auto px-6 -mt-32 relative z-10">

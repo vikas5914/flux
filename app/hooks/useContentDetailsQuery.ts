@@ -9,10 +9,7 @@ export function useContentDetailsQuery(id: string) {
   const parsed = parseContentId(id);
 
   return useQuery({
-    queryKey:
-      parsed?.type === "movie"
-        ? tmdbKeys.movieDetails(parsed.tmdbId)
-        : tmdbKeys.tvDetails(parsed?.tmdbId ?? 0),
+    queryKey: tmdbKeys.contentDetails(id),
     queryFn: async () => {
       if (!parsed) throw new Error("Invalid content ID");
 

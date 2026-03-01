@@ -7,6 +7,7 @@ export const tmdbKeys = {
   search: () => [...tmdbKeys.all, "search"] as const,
   searchMulti: (query: string) => [...tmdbKeys.search(), query] as const,
   details: () => [...tmdbKeys.all, "details"] as const,
+  contentDetails: (id: string) => [...tmdbKeys.details(), "content", id] as const,
   movieDetails: (id: number) => [...tmdbKeys.details(), "movie", id] as const,
   tvDetails: (id: number) => [...tmdbKeys.details(), "tv", id] as const,
   tvSeason: (tvId: number, season: number) =>

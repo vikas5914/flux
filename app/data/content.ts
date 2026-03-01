@@ -3,6 +3,7 @@ import {
   type TMDBTVShow,
   type TMDBSearchResult,
   type TMDBEpisode,
+  type TMDBSeason,
   posterUrl,
   backdropUrl,
   stillUrl,
@@ -23,6 +24,8 @@ export interface Content {
   backdrop: string;
   cast: { name: string; role: string }[];
   episodes?: { id: string; title: string; duration: string; synopsis: string; thumbnail: string }[];
+  seasons?: { seasonNumber: number; name: string; episodeCount: number }[];
+  numberOfSeasons?: number;
 }
 
 // --- Mappers from TMDB types to our Content type ---
@@ -70,6 +73,14 @@ export function mapTVToContent(tv: TMDBTVShow, episodes?: TMDBEpisode[]): Conten
       synopsis: ep.overview || '',
       thumbnail: stillUrl(ep.still_path),
     })),
+    numberOfSeasons: tv.number_of_seasons,
+    seasons: tv.seasons
+      ?.filter((s) => s.season_number > 0)
+      .map((s) => ({
+        seasonNumber: s.season_number,
+        name: s.name,
+        episodeCount: s.episode_count,
+      })),
   };
 }
 

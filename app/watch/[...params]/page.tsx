@@ -5,8 +5,8 @@ import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 import { Header } from '../../components/Header';
 import { useWatchHistory } from '../../hooks/useWatchHistory';
-import { parseContentId, mapMovieToContent, mapTVToContent, type Content } from '../../data/content';
-import { getMovieDetails, getTVDetails } from '../../lib/tmdb';
+import { useWatchContentQuery } from '../../hooks/useWatchContentQuery';
+import { parseContentId } from '../../data/content';
 
 // --- Provider system ---
 
@@ -68,8 +68,6 @@ export default function WatchPage() {
   const segments = params.params;
   const router = useRouter();
   const { updateProgress } = useWatchHistory();
-  const [content, setContent] = useState<Content | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
   const [activeProvider, setActiveProvider] = useState(DEFAULT_PROVIDER);
 
   // Parse route segments
@@ -85,34 +83,20 @@ export default function WatchPage() {
     ? provider.buildUrl(parsed!.tmdbId, parsed!.type, season, episode)
     : null;
 
+  // Fetch content metadata via TanStack Query
+  const { data: content } = useWatchContentQuery(isValid ? firstParam : undefined);
+
+  // Track watch progress once content is loaded
   useEffect(() => {
-    if (!isValid) {
-      router.push('/');
-      return;
-    }
+    if (!content) return;
+    const episodeId = season && episode ? `s${season}e${episode}` : undefined;
+    updateProgress(content, 0, episodeId);
+  }, [content?.id]);
 
-    async function fetchContent() {
-      try {
-        if (parsed!.type === 'movie') {
-          const movie = await getMovieDetails(parsed!.tmdbId);
-          const c = mapMovieToContent(movie);
-          setContent(c);
-          updateProgress(c, 0);
-        } else {
-          const tv = await getTVDetails(parsed!.tmdbId);
-          const c = mapTVToContent(tv);
-          setContent(c);
-          updateProgress(c, 0, `s${season}e${episode}`);
-        }
-      } catch {
-        // silently fail, page still works with iframe
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
-    fetchContent();
-  }, [segments.join('/')]);
+  // Redirect if invalid route
+  useEffect(() => {
+    if (!isValid) router.push('/');
+  }, [isValid, router]);
 
   if (!isValid || !iframeUrl) return null;
 
@@ -133,7 +117,7 @@ export default function WatchPage() {
                 <span className="text-sm">Back</span>
               </button>
 
-              {!isLoading && content && (
+              {content && (
                 <div className="flex items-center gap-2">
                   <span className="text-[#2a2a2a]">|</span>
                   <h1 className="text-sm font-medium text-white truncate">

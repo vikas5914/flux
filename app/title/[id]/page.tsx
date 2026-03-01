@@ -223,7 +223,7 @@ export default function DetailsPage() {
                       <div className="shrink-0 w-8 text-center">
                         <span className="text-sm text-[#71717a]">{index + 1}</span>
                       </div>
-<div className="shrink-0 w-32 h-20 overflow-hidden rounded">
+                      <div className="shrink-0 w-32 h-20 overflow-hidden rounded">
                         <img
                           src={episode.thumbnail}
                           alt={episode.title}

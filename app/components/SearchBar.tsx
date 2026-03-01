@@ -31,7 +31,7 @@ export function SearchBar({ query, onQueryChange, isLoading }: SearchBarProps) {
           type="text"
           value={query}
           onChange={(e) => onQueryChange(e.target.value)}
-          placeholder="Search movies, series, actors\u2026"
+          placeholder="Search movies, series or anime"
           className="w-full bg-[#111111] border border-[#2a2a2a] rounded text-white pl-12 pr-10 py-3.5 text-base placeholder:text-[#71717a] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#f6821f]/50 focus-visible:border-[#3a3a3a] transition-colors touch-action-manipulation"
         />
         {query && (

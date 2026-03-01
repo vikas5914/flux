@@ -2,11 +2,11 @@
 
 import { useParams, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
-import { ArrowLeft, Play, Clock, Star } from 'lucide-react';
+import { ArrowLeft, Play, Clock, Star, ChevronDown } from 'lucide-react';
 import { Header } from '../../components/Header';
 import { useWatchHistory } from '../../hooks/useSearch';
 import { parseContentId, mapMovieToContent, mapTVToContent, type Content } from '../../data/content';
-import { getMovieDetails, getTVDetails, getTVSeasonDetails } from '../../lib/tmdb';
+import { getMovieDetails, getTVDetails, getTVSeasonDetails, type TMDBTVShow } from '../../lib/tmdb';
 
 export default function DetailsPage() {
   const params = useParams<{ id: string }>();
@@ -17,6 +17,9 @@ export default function DetailsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(false);
   const [selectedEpisode, setSelectedEpisode] = useState<string | null>(null);
+  const [selectedSeason, setSelectedSeason] = useState(1);
+  const [isSeasonLoading, setIsSeasonLoading] = useState(false);
+  const [tvShowRef, setTvShowRef] = useState<TMDBTVShow | null>(null);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -34,10 +37,11 @@ export default function DetailsPage() {
           const movie = await getMovieDetails(parsed.tmdbId);
           setContent(mapMovieToContent(movie));
         } else {
-          const [tv, season] = await Promise.all([
-            getTVDetails(parsed.tmdbId),
-            getTVSeasonDetails(parsed.tmdbId, 1).catch(() => null),
-          ]);
+          const tv = await getTVDetails(parsed.tmdbId);
+          setTvShowRef(tv);
+          const firstSeason = tv.seasons?.find((s) => s.season_number > 0)?.season_number ?? 1;
+          setSelectedSeason(firstSeason);
+          const season = await getTVSeasonDetails(parsed.tmdbId, firstSeason).catch(() => null);
           setContent(mapTVToContent(tv, season?.episodes));
         }
       } catch {
@@ -49,6 +53,20 @@ export default function DetailsPage() {
 
     fetchDetails();
   }, [id]);
+
+  const handleSeasonChange = async (seasonNumber: number) => {
+    if (!tvShowRef || seasonNumber === selectedSeason) return;
+    setSelectedSeason(seasonNumber);
+    setIsSeasonLoading(true);
+    try {
+      const parsed = parseContentId(id);
+      if (!parsed) return;
+      const season = await getTVSeasonDetails(parsed.tmdbId, seasonNumber).catch(() => null);
+      setContent(mapTVToContent(tvShowRef, season?.episodes));
+    } finally {
+      setIsSeasonLoading(false);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -175,50 +193,76 @@ export default function DetailsPage() {
 
           {content.type === 'series' && content.episodes && content.episodes.length > 0 && (
             <section className="mt-12 pb-32">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="h-px w-6 bg-[#f6821f]" />
-                <h2 className="font-mono text-xs uppercase tracking-widest text-[#f6821f]">
-                  Episodes
-                </h2>
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="h-px w-6 bg-[#f6821f]" />
+                  <h2 className="font-mono text-xs uppercase tracking-widest text-[#f6821f]">
+                    Episodes
+                  </h2>
+                </div>
+
+                {content.seasons && content.seasons.length > 1 && (
+                  <div className="relative">
+                    <select
+                      value={selectedSeason}
+                      onChange={(e) => handleSeasonChange(Number(e.target.value))}
+                      disabled={isSeasonLoading}
+                      className="appearance-none bg-[#151515] border border-[#2a2a2a] text-white text-sm rounded px-3 py-1.5 pr-8 cursor-pointer hover:border-[#3a3a3a] transition-colors focus:outline-none focus:border-[#f6821f] disabled:opacity-50"
+                    >
+                      {content.seasons.map((s) => (
+                        <option key={s.seasonNumber} value={s.seasonNumber}>
+                          {s.name}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#71717a] pointer-events-none" />
+                  </div>
+                )}
               </div>
               
-              <div className="space-y-2">
-                {content.episodes.map((episode, index) => (
-                  <button
-                    key={episode.id}
-                    onClick={() => {
-                      setSelectedEpisode(episode.id);
-                      handlePlay(episode.id);
-                    }}
-                    className={`w-full flex items-center gap-4 p-4 text-left transition-colors rounded ${
-                      selectedEpisode === episode.id
-                        ? 'bg-[#151515] border border-[#2a2a2a]'
-                        : 'bg-[#0f0f0f] border border-[#1f1f1f] hover:bg-[#151515] hover:border-[#2a2a2a]'
-                    }`}
-                  >
-                    <div className="flex-shrink-0 w-8 text-center">
-                      <span className="text-sm text-[#71717a]">{index + 1}</span>
-                    </div>
-                    <div className="flex-shrink-0 w-32 h-18 overflow-hidden rounded">
-                      <img
-                        src={episode.thumbnail}
-                        alt={episode.title}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-white">{episode.title}</p>
-                      <p className="text-xs text-[#71717a] mt-1 line-clamp-2">{episode.synopsis}</p>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <span className="text-xs text-[#71717a]">{episode.duration}</span>
-                      <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
-                        <Play className="w-3.5 h-3.5 text-white fill-white ml-0.5" />
+              {isSeasonLoading ? (
+                <div className="flex items-center justify-center py-12">
+                  <div className="w-6 h-6 border-2 border-[#f6821f] border-t-transparent rounded-full animate-spin" />
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {content.episodes.map((episode, index) => (
+                    <button
+                      key={episode.id}
+                      onClick={() => {
+                        setSelectedEpisode(episode.id);
+                        handlePlay(episode.id);
+                      }}
+                      className={`w-full flex items-center gap-4 p-4 text-left transition-colors rounded ${
+                        selectedEpisode === episode.id
+                          ? 'bg-[#151515] border border-[#2a2a2a]'
+                          : 'bg-[#0f0f0f] border border-[#1f1f1f] hover:bg-[#151515] hover:border-[#2a2a2a]'
+                      }`}
+                    >
+                      <div className="flex-shrink-0 w-8 text-center">
+                        <span className="text-sm text-[#71717a]">{index + 1}</span>
                       </div>
-                    </div>
-                  </button>
-                ))}
-              </div>
+                      <div className="flex-shrink-0 w-32 h-18 overflow-hidden rounded">
+                        <img
+                          src={episode.thumbnail}
+                          alt={episode.title}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-white">{episode.title}</p>
+                        <p className="text-xs text-[#71717a] mt-1 line-clamp-2">{episode.synopsis}</p>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <span className="text-xs text-[#71717a]">{episode.duration}</span>
+                        <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
+                          <Play className="w-3.5 h-3.5 text-white fill-white ml-0.5" />
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
             </section>
           )}
         </div>

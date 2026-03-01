@@ -81,7 +81,7 @@ export default function DetailsPage() {
             alt={content.title}
             className="w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/50 to-transparent" />
+          <div className="absolute inset-0 bg-linear-to-t from-[#0a0a0a] via-[#0a0a0a]/50 to-transparent" />
           
           <button
             onClick={() => router.back()}
@@ -94,7 +94,7 @@ export default function DetailsPage() {
 
         <div className="max-w-6xl mx-auto px-6 -mt-32 relative z-10">
           <div className="flex flex-col md:flex-row gap-8">
-            <div className="flex-shrink-0 hidden md:block">
+            <div className="shrink-0 hidden md:block">
               <img
                 src={content.poster}
                 alt={content.title}
@@ -220,10 +220,10 @@ export default function DetailsPage() {
                           : 'bg-[#0f0f0f] border border-[#1f1f1f] hover:bg-[#151515] hover:border-[#2a2a2a]'
                       }`}
                     >
-                      <div className="flex-shrink-0 w-8 text-center">
+                      <div className="shrink-0 w-8 text-center">
                         <span className="text-sm text-[#71717a]">{index + 1}</span>
                       </div>
-                      <div className="flex-shrink-0 w-32 h-18 overflow-hidden rounded">
+<div className="shrink-0 w-32 h-20 overflow-hidden rounded">
                         <img
                           src={episode.thumbnail}
                           alt={episode.title}

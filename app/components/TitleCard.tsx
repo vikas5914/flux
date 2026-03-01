@@ -15,7 +15,7 @@ export function TitleCard({ content, progress, showProgress = false }: TitleCard
       href={`/title/${content.id}`}
       className="group block"
     >
-      <div className="relative aspect-[2/3] overflow-hidden rounded">
+      <div className="relative aspect-2/3 overflow-hidden rounded">
         <img
           src={content.poster}
           alt={content.title}

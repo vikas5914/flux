@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { SearchBar } from './SearchBar';
+import { SearchBar } from "./SearchBar";
 
 interface HeroSectionProps {
   query: string;
@@ -18,11 +18,7 @@ export function HeroSection({ query, onQueryChange, isSearchLoading }: HeroSecti
         Search for movies and series to start watching instantly.
       </p>
 
-      <SearchBar
-        query={query}
-        onQueryChange={onQueryChange}
-        isLoading={isSearchLoading}
-      />
+      <SearchBar query={query} onQueryChange={onQueryChange} isLoading={isSearchLoading} />
     </section>
   );
 }

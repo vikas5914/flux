@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useQuery } from '@tanstack/react-query';
-import { tmdbKeys } from '../lib/query-keys';
-import { mapTVToContent } from '../data/content';
-import { getTVSeasonDetails, type TMDBTVShow } from '../lib/tmdb';
+import { useQuery } from "@tanstack/react-query";
+import { tmdbKeys } from "../lib/query-keys";
+import { mapTVToContent } from "../data/content";
+import { getTVSeasonDetails, type TMDBTVShow } from "../lib/tmdb";
 
 export function useSeasonQuery(
   tvShow: TMDBTVShow | null | undefined,

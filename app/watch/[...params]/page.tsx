@@ -1,57 +1,57 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft } from 'lucide-react';
-import { Header } from '../../components/Header';
-import { useWatchHistory } from '../../hooks/useWatchHistory';
-import { useWatchContentQuery } from '../../hooks/useWatchContentQuery';
-import { parseContentId } from '../../data/content';
+import { useState, useEffect } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { ArrowLeft } from "lucide-react";
+import { Header } from "../../components/Header";
+import { useWatchHistory } from "../../hooks/useWatchHistory";
+import { useWatchContentQuery } from "../../hooks/useWatchContentQuery";
+import { parseContentId } from "../../data/content";
 
 // --- Provider system ---
 
 interface Provider {
   id: string;
   name: string;
-  buildUrl: (tmdbId: number, type: 'movie' | 'tv', season?: string, episode?: string) => string;
+  buildUrl: (tmdbId: number, type: "movie" | "tv", season?: string, episode?: string) => string;
 }
 
 const PROVIDERS: Provider[] = [
   {
-    id: 'vidlink',
-    name: 'VidLink',
+    id: "vidlink",
+    name: "VidLink",
     buildUrl: (tmdbId, type, season, episode) => {
-      if (type === 'movie') {
+      if (type === "movie") {
         return `https://vidlink.pro/movie/${tmdbId}?autoplay=1&muted=0&quality=highest`;
       }
       return `https://vidlink.pro/tv/${tmdbId}/${season}/${episode}?autoplay=1&muted=0&quality=highest`;
     },
   },
   {
-    id: 'vidfast',
-    name: 'VidFast',
+    id: "vidfast",
+    name: "VidFast",
     buildUrl: (tmdbId, type, season, episode) => {
-      if (type === 'movie') {
+      if (type === "movie") {
         return `https://vidfast.pro/movie/${tmdbId}?autoplay=1&muted=0&quality=highest`;
       }
       return `https://vidfast.pro/tv/${tmdbId}/${season}/${episode}?autoplay=1&muted=0&quality=highest`;
     },
   },
   {
-    id: '111movies',
-    name: '111Movies',
+    id: "111movies",
+    name: "111Movies",
     buildUrl: (tmdbId, type, season, episode) => {
-      if (type === 'movie') {
+      if (type === "movie") {
         return `https://111movies.net/movie/${tmdbId}?autoplay=1&muted=0&quality=highest`;
       }
       return `https://111movies.net/tv/${tmdbId}/${season}/${episode}?autoplay=1&muted=0&quality=highest`;
     },
   },
   {
-    id: 'videasy',
-    name: 'Videasy',
+    id: "videasy",
+    name: "Videasy",
     buildUrl: (tmdbId, type, season, episode) => {
-      if (type === 'movie') {
+      if (type === "movie") {
         return `https://player.videasy.net/movie/${tmdbId}?autoplay=1&muted=0&quality=highest`;
       }
       return `https://player.videasy.net/tv/${tmdbId}/${season}/${episode}?autoplay=1&muted=0&quality=highest`;
@@ -75,7 +75,8 @@ export default function WatchPage() {
   const parsed = firstParam ? parseContentId(firstParam) : null;
   const season = segments?.length >= 3 ? segments[1] : undefined;
   const episode = segments?.length >= 3 ? segments[2] : undefined;
-  const isValid = parsed && (parsed.type === 'movie' || (parsed.type === 'tv' && season && episode));
+  const isValid =
+    parsed && (parsed.type === "movie" || (parsed.type === "tv" && season && episode));
 
   // Build iframe URL from active provider
   const provider = PROVIDERS.find((p) => p.id === activeProvider) ?? PROVIDERS[0];
@@ -95,7 +96,7 @@ export default function WatchPage() {
 
   // Redirect if invalid route
   useEffect(() => {
-    if (!isValid) router.push('/');
+    if (!isValid) router.push("/");
   }, [isValid, router]);
 
   if (!isValid || !iframeUrl) return null;
@@ -120,9 +121,7 @@ export default function WatchPage() {
               {content && (
                 <div className="flex items-center gap-2">
                   <span className="text-[#2a2a2a]">|</span>
-                  <h1 className="text-sm font-medium text-white truncate">
-                    {content.title}
-                  </h1>
+                  <h1 className="text-sm font-medium text-white truncate">{content.title}</h1>
                   {season && episode && (
                     <span className="text-xs text-[#71717a]">
                       S{season} E{episode}
@@ -140,8 +139,8 @@ export default function WatchPage() {
                   onClick={() => setActiveProvider(p.id)}
                   className={`px-3 py-1.5 rounded text-xs font-medium transition-colors ${
                     activeProvider === p.id
-                      ? 'bg-[#151515] border border-[#f6821f] text-[#f6821f]'
-                      : 'bg-[#151515] border border-[#2a2a2a] text-[#a1a1aa] hover:border-[#3a3a3a] hover:text-white'
+                      ? "bg-[#151515] border border-[#f6821f] text-[#f6821f]"
+                      : "bg-[#151515] border border-[#2a2a2a] text-[#a1a1aa] hover:border-[#3a3a3a] hover:text-white"
                   }`}
                 >
                   {p.name}
@@ -152,7 +151,7 @@ export default function WatchPage() {
         </div>
 
         {/* Iframe container */}
-        <div className="w-full" style={{ height: 'calc(100vh - 112px)' }}>
+        <div className="w-full" style={{ height: "calc(100vh - 112px)" }}>
           <iframe
             key={activeProvider}
             src={iframeUrl}

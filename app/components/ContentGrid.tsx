@@ -1,5 +1,5 @@
-import { TitleCard } from './TitleCard';
-import type { Content } from '../data/content';
+import { TitleCard } from "./TitleCard";
+import type { Content } from "../data/content";
 
 interface ContentGridProps {
   items: Content[];

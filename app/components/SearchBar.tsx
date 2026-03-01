@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useRef } from 'react';
-import { Search, X, Loader2 } from 'lucide-react';
+import { useRef } from "react";
+import { Search, X, Loader2 } from "lucide-react";
 
 interface SearchBarProps {
   query: string;
@@ -16,9 +16,15 @@ export function SearchBar({ query, onQueryChange, isLoading }: SearchBarProps) {
     <div className="relative w-full max-w-2xl mx-auto">
       <div className="relative">
         {isLoading ? (
-          <Loader2 aria-hidden="true" className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#f6821f] animate-spin" />
+          <Loader2
+            aria-hidden="true"
+            className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#f6821f] animate-spin"
+          />
         ) : (
-          <Search aria-hidden="true" className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#71717a]" />
+          <Search
+            aria-hidden="true"
+            className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#71717a]"
+          />
         )}
         <input
           ref={inputRef}
@@ -31,7 +37,7 @@ export function SearchBar({ query, onQueryChange, isLoading }: SearchBarProps) {
         {query && (
           <button
             onClick={() => {
-              onQueryChange('');
+              onQueryChange("");
               inputRef.current?.focus();
             }}
             aria-label="Clear search"

@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useTrendingQuery } from '../hooks/useTrendingQuery';
-import { SectionHeading } from './SectionHeading';
-import { ContentGrid } from './ContentGrid';
-import { Spinner } from './Spinner';
+import { useTrendingQuery } from "../hooks/useTrendingQuery";
+import { SectionHeading } from "./SectionHeading";
+import { ContentGrid } from "./ContentGrid";
+import { Spinner } from "./Spinner";
 
 export function TrendingSection() {
   const { data: trending = [], isLoading } = useTrendingQuery();

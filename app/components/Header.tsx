@@ -1,5 +1,5 @@
-import Link from 'next/link';
-import { Play } from 'lucide-react';
+import Link from "next/link";
+import { Play } from "lucide-react";
 
 export function Header() {
   return (
@@ -9,24 +9,15 @@ export function Header() {
           <Play aria-hidden="true" className="w-5 h-5 text-[#f6821f] fill-[#f6821f]" />
           <span className="text-sm font-semibold tracking-tight">Stream</span>
         </Link>
-        
+
         <nav className="flex items-center gap-6">
-          <Link 
-            href="/" 
-            className="text-sm text-[#a1a1aa] hover:text-white transition-colors"
-          >
+          <Link href="/" className="text-sm text-[#a1a1aa] hover:text-white transition-colors">
             Home
           </Link>
-          <Link 
-            href="/" 
-            className="text-sm text-[#a1a1aa] hover:text-white transition-colors"
-          >
+          <Link href="/" className="text-sm text-[#a1a1aa] hover:text-white transition-colors">
             Movies
           </Link>
-          <Link 
-            href="/" 
-            className="text-sm text-[#a1a1aa] hover:text-white transition-colors"
-          >
+          <Link href="/" className="text-sm text-[#a1a1aa] hover:text-white transition-colors">
             Series
           </Link>
         </nav>

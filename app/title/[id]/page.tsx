@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, Play, Clock, Star, ChevronDown } from 'lucide-react';
-import { Header } from '../../components/Header';
-import { Spinner } from '../../components/Spinner';
-import { useWatchHistory } from '../../hooks/useWatchHistory';
-import { useContentDetailsQuery } from '../../hooks/useContentDetailsQuery';
-import { useSeasonQuery } from '../../hooks/useSeasonQuery';
-import { parseContentId } from '../../data/content';
+import { useState, useEffect } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { ArrowLeft, Play, Clock, Star, ChevronDown } from "lucide-react";
+import { Header } from "../../components/Header";
+import { Spinner } from "../../components/Spinner";
+import { useWatchHistory } from "../../hooks/useWatchHistory";
+import { useContentDetailsQuery } from "../../hooks/useContentDetailsQuery";
+import { useSeasonQuery } from "../../hooks/useSeasonQuery";
+import { parseContentId } from "../../data/content";
 
 export default function DetailsPage() {
   const params = useParams<{ id: string }>();
@@ -22,7 +22,9 @@ export default function DetailsPage() {
   const { data: details, isLoading, isError } = useContentDetailsQuery(id);
 
   // Scroll to top on mount
-  useEffect(() => { window.scrollTo(0, 0); }, [id]);
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [id]);
 
   // Derive season: user selection takes priority, otherwise use initial from query
   const seasonToFetch = userSelectedSeason ?? details?.initialSeason ?? 1;
@@ -33,7 +35,7 @@ export default function DetailsPage() {
   );
 
   // Use season-specific content for TV, otherwise the initial details content
-  const content = details?.tvShow && seasonContent ? seasonContent : details?.content ?? null;
+  const content = details?.tvShow && seasonContent ? seasonContent : (details?.content ?? null);
 
   if (isLoading) {
     return (
@@ -73,16 +75,12 @@ export default function DetailsPage() {
   return (
     <div className="min-h-screen bg-[#0a0a0a]">
       <Header />
-      
+
       <main className="pt-14">
         <div className="relative h-[50vh] min-h-[400px]">
-          <img
-            src={content.backdrop}
-            alt={content.title}
-            className="w-full h-full object-cover"
-          />
+          <img src={content.backdrop} alt={content.title} className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-linear-to-t from-[#0a0a0a] via-[#0a0a0a]/50 to-transparent" />
-          
+
           <button
             onClick={() => router.back()}
             className="absolute top-6 left-6 flex items-center gap-2 text-white/80 hover:text-white transition-colors"
@@ -144,11 +142,13 @@ export default function DetailsPage() {
               </p>
 
               <button
-                onClick={() => handlePlay(content.type === 'series' ? (content.episodes?.[0]?.id) : undefined)}
+                onClick={() =>
+                  handlePlay(content.type === "series" ? content.episodes?.[0]?.id : undefined)
+                }
                 className="inline-flex items-center gap-2 bg-white text-black px-6 py-2.5 rounded text-sm font-medium hover:bg-[#e5e5e5] transition-colors"
               >
                 <Play className="w-4 h-4 fill-black" />
-                {content.type === 'series' ? 'Play First Episode' : 'Play Now'}
+                {content.type === "series" ? "Play First Episode" : "Play Now"}
               </button>
             </div>
           </div>
@@ -157,9 +157,7 @@ export default function DetailsPage() {
             <section className="mt-12">
               <div className="flex items-center gap-3 mb-4">
                 <div className="h-px w-6 bg-[#f6821f]" />
-                <h2 className="font-mono text-xs uppercase tracking-widest text-[#f6821f]">
-                  Cast
-                </h2>
+                <h2 className="font-mono text-xs uppercase tracking-widest text-[#f6821f]">Cast</h2>
               </div>
               <div className="flex flex-wrap gap-6">
                 {content.cast.map((member) => (
@@ -172,7 +170,7 @@ export default function DetailsPage() {
             </section>
           )}
 
-          {content.type === 'series' && content.episodes && content.episodes.length > 0 && (
+          {content.type === "series" && content.episodes && content.episodes.length > 0 && (
             <section className="mt-12 pb-32">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
@@ -200,7 +198,7 @@ export default function DetailsPage() {
                   </div>
                 )}
               </div>
-              
+
               {isSeasonLoading ? (
                 <div className="flex items-center justify-center py-12">
                   <div className="w-6 h-6 border-2 border-[#f6821f] border-t-transparent rounded-full animate-spin" />
@@ -216,8 +214,8 @@ export default function DetailsPage() {
                       }}
                       className={`w-full flex items-center gap-4 p-4 text-left transition-colors rounded ${
                         selectedEpisode === episode.id
-                          ? 'bg-[#151515] border border-[#2a2a2a]'
-                          : 'bg-[#0f0f0f] border border-[#1f1f1f] hover:bg-[#151515] hover:border-[#2a2a2a]'
+                          ? "bg-[#151515] border border-[#2a2a2a]"
+                          : "bg-[#0f0f0f] border border-[#1f1f1f] hover:bg-[#151515] hover:border-[#2a2a2a]"
                       }`}
                     >
                       <div className="shrink-0 w-8 text-center">
@@ -232,7 +230,9 @@ export default function DetailsPage() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-white">{episode.title}</p>
-                        <p className="text-xs text-[#71717a] mt-1 line-clamp-2">{episode.synopsis}</p>
+                        <p className="text-xs text-[#71717a] mt-1 line-clamp-2">
+                          {episode.synopsis}
+                        </p>
                       </div>
                       <div className="flex items-center gap-4">
                         <span className="text-xs text-[#71717a]">{episode.duration}</span>

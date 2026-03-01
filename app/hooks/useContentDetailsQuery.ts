@@ -1,21 +1,22 @@
-'use client';
+"use client";
 
-import { useQuery } from '@tanstack/react-query';
-import { tmdbKeys } from '../lib/query-keys';
-import { parseContentId, mapMovieToContent, mapTVToContent } from '../data/content';
-import { getMovieDetails, getTVDetails, getTVSeasonDetails } from '../lib/tmdb';
+import { useQuery } from "@tanstack/react-query";
+import { tmdbKeys } from "../lib/query-keys";
+import { parseContentId, mapMovieToContent, mapTVToContent } from "../data/content";
+import { getMovieDetails, getTVDetails, getTVSeasonDetails } from "../lib/tmdb";
 
 export function useContentDetailsQuery(id: string) {
   const parsed = parseContentId(id);
 
   return useQuery({
-    queryKey: parsed?.type === 'movie'
-      ? tmdbKeys.movieDetails(parsed.tmdbId)
-      : tmdbKeys.tvDetails(parsed?.tmdbId ?? 0),
+    queryKey:
+      parsed?.type === "movie"
+        ? tmdbKeys.movieDetails(parsed.tmdbId)
+        : tmdbKeys.tvDetails(parsed?.tmdbId ?? 0),
     queryFn: async () => {
-      if (!parsed) throw new Error('Invalid content ID');
+      if (!parsed) throw new Error("Invalid content ID");
 
-      if (parsed.type === 'movie') {
+      if (parsed.type === "movie") {
         const movie = await getMovieDetails(parsed.tmdbId);
         return {
           content: mapMovieToContent(movie),

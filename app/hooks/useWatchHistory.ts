@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useState, useCallback } from 'react';
-import type { Content } from '../data/content';
+import { useState, useCallback } from "react";
+import type { Content } from "../data/content";
 
 interface WatchHistoryItem {
   contentId: string;
@@ -12,7 +12,7 @@ interface WatchHistoryItem {
   title: string;
   poster: string;
   year: number;
-  type: 'movie' | 'series';
+  type: "movie" | "series";
 }
 
 export interface ContinueWatchingItem {
@@ -23,9 +23,9 @@ export interface ContinueWatchingItem {
 
 export function useWatchHistory() {
   const [history, setHistory] = useState<WatchHistoryItem[]>(() => {
-    if (typeof window === 'undefined') return [];
+    if (typeof window === "undefined") return [];
     try {
-      const saved = localStorage.getItem('watchHistory');
+      const saved = localStorage.getItem("watchHistory");
       return saved ? JSON.parse(saved) : [];
     } catch {
       return [];
@@ -47,7 +47,7 @@ export function useWatchHistory() {
         },
         ...prev.filter((h) => h.contentId !== content.id),
       ];
-      localStorage.setItem('watchHistory', JSON.stringify(newHistory));
+      localStorage.setItem("watchHistory", JSON.stringify(newHistory));
       return newHistory;
     });
   }, []);
@@ -65,8 +65,8 @@ export function useWatchHistory() {
           type: h.type,
           rating: 0,
           genres: [],
-          synopsis: '',
-          backdrop: '',
+          synopsis: "",
+          backdrop: "",
           cast: [],
         },
         progress: h.progress,

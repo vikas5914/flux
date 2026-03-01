@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import type { Content } from '../data/content';
-import { SectionHeading } from './SectionHeading';
-import { ContentGrid } from './ContentGrid';
-import { Spinner } from './Spinner';
-import { EmptyState } from './EmptyState';
+import type { Content } from "../data/content";
+import { SectionHeading } from "./SectionHeading";
+import { ContentGrid } from "./ContentGrid";
+import { Spinner } from "./Spinner";
+import { EmptyState } from "./EmptyState";
 
 interface SearchResultsSectionProps {
   query: string;
@@ -17,9 +17,7 @@ export function SearchResultsSection({ query, results, isLoading }: SearchResult
     <section>
       <SectionHeading title="Search Results">
         {!isLoading && results.length > 0 && (
-          <span className="text-xs text-[#71717a]">
-            {results.length} found
-          </span>
+          <span className="text-xs text-[#71717a]">{results.length} found</span>
         )}
       </SectionHeading>
 

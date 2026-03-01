@@ -1,6 +1,6 @@
-import Link from 'next/link';
-import { Play } from 'lucide-react';
-import type { Content } from '../data/content';
+import Link from "next/link";
+import { Play } from "lucide-react";
+import type { Content } from "../data/content";
 
 interface TitleCardProps {
   content: Content;
@@ -11,10 +11,7 @@ interface TitleCardProps {
 
 export function TitleCard({ content, progress, showProgress = false }: TitleCardProps) {
   return (
-    <Link
-      href={`/title/${content.id}`}
-      className="group block"
-    >
+    <Link href={`/title/${content.id}`} className="group block">
       <div className="relative aspect-2/3 overflow-hidden rounded">
         <img
           src={content.poster}
@@ -31,10 +28,7 @@ export function TitleCard({ content, progress, showProgress = false }: TitleCard
         </div>
         {showProgress && progress !== undefined && progress > 0 && (
           <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#1f1f1f]">
-            <div
-              className="h-full bg-[#f6821f]"
-              style={{ width: `${progress}%` }}
-            />
+            <div className="h-full bg-[#f6821f]" style={{ width: `${progress}%` }} />
           </div>
         )}
       </div>
@@ -42,9 +36,7 @@ export function TitleCard({ content, progress, showProgress = false }: TitleCard
         <p className="text-sm font-medium text-white truncate group-hover:text-[#f6821f] transition-colors">
           {content.title}
         </p>
-        <p className="text-xs text-[#71717a] mt-0.5">
-          {content.year}
-        </p>
+        <p className="text-xs text-[#71717a] mt-0.5">{content.year}</p>
       </div>
     </Link>
   );

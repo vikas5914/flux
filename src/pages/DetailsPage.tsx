@@ -231,10 +231,14 @@ export default function DetailsPage() {
                         <p className="text-xs text-[#71717a] mt-1 line-clamp-2">
                           {episode.synopsis}
                         </p>
-                        <span className="text-xs text-[#71717a] mt-1 sm:hidden inline-block">{episode.duration}</span>
+                        <span className="text-xs text-[#71717a] mt-1 sm:hidden inline-block">
+                          {episode.duration}
+                        </span>
                       </div>
                       <div className="flex items-center gap-4">
-                        <span className="text-xs text-[#71717a] hidden sm:inline">{episode.duration}</span>
+                        <span className="text-xs text-[#71717a] hidden sm:inline">
+                          {episode.duration}
+                        </span>
                         <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
                           <Play className="w-3.5 h-3.5 text-white fill-white ml-0.5" />
                         </div>

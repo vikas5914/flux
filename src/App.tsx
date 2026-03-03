@@ -1,7 +1,7 @@
-import { Routes, Route } from 'react-router-dom';
-import HomePage from './pages/HomePage';
-import DetailsPage from './pages/DetailsPage';
-import WatchPage from './pages/WatchPage';
+import { Routes, Route } from "react-router-dom";
+import HomePage from "./pages/HomePage";
+import DetailsPage from "./pages/DetailsPage";
+import WatchPage from "./pages/WatchPage";
 
 function App() {
   return (
@@ -13,4 +13,4 @@ function App() {
   );
 }
 
-export default App
+export default App;

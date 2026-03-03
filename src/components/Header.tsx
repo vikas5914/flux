@@ -18,9 +18,7 @@ export function Header({ title, subtitle }: HeaderProps = {}) {
         {title ? (
           <div className="flex items-center gap-2 min-w-0">
             <span className="text-sm font-medium text-white truncate">{title}</span>
-            {subtitle && (
-              <span className="text-xs text-[#71717a] shrink-0">{subtitle}</span>
-            )}
+            {subtitle && <span className="text-xs text-[#71717a] shrink-0">{subtitle}</span>}
           </div>
         ) : (
           <div />

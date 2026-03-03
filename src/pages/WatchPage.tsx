@@ -40,9 +40,9 @@ const PROVIDERS: Provider[] = [
     name: "111Movies",
     buildUrl: (tmdbId, type, season, episode) => {
       if (type === "movie") {
-        return `https://111movies.net/movie/${tmdbId}?autoplay=0&muted=0&quality=highest`;
+        return `https://111movies.net/movie/${tmdbId}?autoplay=false&muted=false&quality=highest`;
       }
-      return `https://111movies.net/tv/${tmdbId}/${season}/${episode}?autoplay=0&muted=0&quality=highest`;
+      return `https://111movies.net/tv/${tmdbId}/${season}/${episode}?autoplay=false&muted=false&quality=highest`;
     },
   },
   {
@@ -149,9 +149,7 @@ export default function WatchPage() {
 
             {season && episode ? (
               <button
-                onClick={() =>
-                  navigate(`/watch/${contentId}/${season}/${Number(episode) + 1}`)
-                }
+                onClick={() => navigate(`/watch/${contentId}/${season}/${Number(episode) + 1}`)}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-medium bg-[#151515] border border-[#2a2a2a] text-[#a1a1aa] hover:border-[#f6821f] hover:text-[#f6821f] transition-colors"
               >
                 <span>Next Episode</span>
@@ -176,7 +174,10 @@ export default function WatchPage() {
         </div>
 
         {/* Bottom bar — mobile only */}
-        <div className="fixed bottom-0 inset-x-0 z-50 sm:hidden bg-[#111111] border-t border-[#1f1f1f]" style={{ paddingBottom: "env(safe-area-inset-bottom)" }}>
+        <div
+          className="fixed bottom-0 inset-x-0 z-50 sm:hidden bg-[#111111] border-t border-[#1f1f1f]"
+          style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+        >
           <div className="flex items-center justify-between gap-2 px-3 py-2">
             <button
               onClick={() => navigate(`/title/${contentId}`)}
@@ -203,9 +204,7 @@ export default function WatchPage() {
 
             {season && episode ? (
               <button
-                onClick={() =>
-                  navigate(`/watch/${contentId}/${season}/${Number(episode) + 1}`)
-                }
+                onClick={() => navigate(`/watch/${contentId}/${season}/${Number(episode) + 1}`)}
                 className="flex items-center justify-center w-9 h-9 rounded bg-[#151515] border border-[#2a2a2a] text-[#a1a1aa] active:border-[#f6821f] active:text-[#f6821f] transition-colors"
               >
                 <ChevronRight className="w-4 h-4" />

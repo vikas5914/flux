@@ -6,7 +6,7 @@ interface HeaderProps {
   subtitle?: string;
 }
 
-export function Header({ title, subtitle }: HeaderProps = {}) {
+export function Header({ title, subtitle }: HeaderProps) {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 h-14 bg-[#0a0a0a]/90 backdrop-blur-sm border-b border-[#1f1f1f]">
       <div className="max-w-6xl mx-auto px-6 h-full grid grid-cols-[1fr_auto_1fr] items-center">

@@ -1,6 +1,9 @@
+import { useCallback } from "react";
 import { Link } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import { Play } from "lucide-react";
 import type { Content } from "../data/content";
+import { prefetchContentDetails } from "../hooks/useContentDetailsQuery";
 
 interface TitleCardProps {
   content: Content;
@@ -11,8 +14,18 @@ interface TitleCardProps {
 }
 
 export function TitleCard({ content, progress, showProgress = false, linkTo }: TitleCardProps) {
+  const queryClient = useQueryClient();
+
+  const handlePrefetch = useCallback(() => {
+    prefetchContentDetails(queryClient, content.id);
+  }, [queryClient, content.id]);
+
   return (
-    <Link to={linkTo ?? `/title/${content.id}`} className="group block">
+    <Link
+      to={linkTo ?? `/title/${content.id}`}
+      className="group block"
+      onMouseEnter={handlePrefetch}
+    >
       <div className="relative aspect-2/3 overflow-hidden rounded">
         <img
           src={content.poster}

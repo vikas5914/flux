@@ -12,7 +12,7 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: "autoUpdate",
-      injectRegister: false,
+      injectRegister: "auto",
 
       pwaAssets: {
         disabled: false,
@@ -44,8 +44,6 @@ export default defineConfig({
         globPatterns: ["**/*.{js,css,html,svg,png,ico}"],
         cleanupOutdatedCaches: true,
         clientsClaim: true,
-        navigateFallback: "index.html",
-        navigateFallbackAllowlist: [/^\/$/, /^\/title\//, /^\/watch\//],
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/image\.tmdb\.org\/.*/i,
@@ -63,7 +61,7 @@ export default defineConfig({
           },
           {
             urlPattern: /^https:\/\/api\.themoviedb\.org\/.*/i,
-            handler: "NetworkFirst",
+            handler: "StaleWhileRevalidate",
             options: {
               cacheName: "tmdb-api",
               expiration: {

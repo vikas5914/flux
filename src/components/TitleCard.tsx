@@ -27,6 +27,9 @@ export function TitleCard({ content, progress, showProgress = false, linkTo }: T
             <Play aria-hidden="true" className="w-5 h-5 text-black fill-black ml-0.5" />
           </div>
         </div>
+        <div className="absolute bottom-2 right-2 w-7 h-7 rounded-full bg-black/60 flex items-center justify-center [@media(hover:hover)]:hidden">
+          <Play aria-hidden="true" className="w-3 h-3 text-white fill-white ml-0.5" />
+        </div>
         {showProgress && progress !== undefined && progress > 0 && (
           <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#1f1f1f]">
             <div className="h-full bg-[#f6821f]" style={{ width: `${progress}%` }} />

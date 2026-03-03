@@ -16,7 +16,7 @@ export default function HomePage() {
       <main className="pt-14">
         <HeroSection query={query} onQueryChange={setQuery} isSearchLoading={isLoading} />
 
-        <div className="max-w-6xl mx-auto px-6 pb-32">
+        <div className="max-w-6xl mx-auto px-6 pb-16 sm:pb-32">
           {hasQuery ? (
             <SearchResultsSection query={query} results={results} isLoading={isLoading} />
           ) : (

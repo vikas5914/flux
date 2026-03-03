@@ -104,5 +104,7 @@ export function mapSearchResultToContent(result: TMDBSearchResult): Content {
 export function parseContentId(id: string): { type: "movie" | "tv"; tmdbId: number } | null {
   const match = id.match(/^(movie|tv)-(\d+)$/);
   if (!match) return null;
-  return { type: match[1] as "movie" | "tv", tmdbId: parseInt(match[2], 10) };
+  const tmdbId = parseInt(match[2], 10);
+  if (tmdbId <= 0) return null;
+  return { type: match[1] as "movie" | "tv", tmdbId };
 }

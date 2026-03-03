@@ -42,7 +42,7 @@ export function ContinueWatching() {
         </h2>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+      <div className="flex gap-3 overflow-x-auto no-scrollbar sm:grid sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 sm:gap-4">
         {items.map((content) => {
           const isMovie = content.type === "movie";
           let watchUrl: string;
@@ -54,7 +54,11 @@ export function ContinueWatching() {
               ? `/watch/${content.id}/${last.season}/${last.episode}`
               : `/title/${content.id}`;
           }
-          return <TitleCard key={content.id} content={content} linkTo={watchUrl} />;
+          return (
+            <div key={content.id} className="w-36 shrink-0 sm:w-auto sm:shrink">
+              <TitleCard content={content} linkTo={watchUrl} />
+            </div>
+          );
         })}
       </div>
     </section>

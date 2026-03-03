@@ -71,7 +71,7 @@ export default function DetailsPage() {
       <Header />
 
       <main className="pt-14">
-        <div className="relative h-[50vh] min-h-[400px]">
+        <div className="relative h-[50vh] min-h-[280px] sm:min-h-[400px]">
           <img src={content.backdrop} alt={content.title} className="w-full h-full object-cover" />
           <div className="absolute inset-0 bg-linear-to-t from-[#0a0a0a] via-[#0a0a0a]/50 to-transparent" />
 
@@ -112,7 +112,7 @@ export default function DetailsPage() {
                 )}
               </div>
 
-              <h1 className="text-4xl sm:text-5xl font-semibold tracking-tight text-white mb-4">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight text-white mb-4">
                 {content.title}
               </h1>
 
@@ -210,7 +210,7 @@ export default function DetailsPage() {
                         setSelectedEpisode(episode.id);
                         handlePlay(episode.id);
                       }}
-                      className={`w-full flex items-center gap-4 p-4 text-left transition-colors rounded ${
+                      className={`w-full flex items-center gap-3 sm:gap-4 p-3 sm:p-4 text-left transition-colors rounded ${
                         selectedEpisode === episode.id
                           ? "bg-[#151515] border border-[#2a2a2a]"
                           : "bg-[#0f0f0f] border border-[#1f1f1f] hover:bg-[#151515] hover:border-[#2a2a2a]"
@@ -219,7 +219,7 @@ export default function DetailsPage() {
                       <div className="shrink-0 w-8 text-center">
                         <span className="text-sm text-[#71717a]">{index + 1}</span>
                       </div>
-                      <div className="shrink-0 w-32 h-20 overflow-hidden rounded">
+                      <div className="shrink-0 w-32 h-20 overflow-hidden rounded hidden sm:block">
                         <img
                           src={episode.thumbnail}
                           alt={episode.title}
@@ -231,9 +231,10 @@ export default function DetailsPage() {
                         <p className="text-xs text-[#71717a] mt-1 line-clamp-2">
                           {episode.synopsis}
                         </p>
+                        <span className="text-xs text-[#71717a] mt-1 sm:hidden inline-block">{episode.duration}</span>
                       </div>
                       <div className="flex items-center gap-4">
-                        <span className="text-xs text-[#71717a]">{episode.duration}</span>
+                        <span className="text-xs text-[#71717a] hidden sm:inline">{episode.duration}</span>
                         <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
                           <Play className="w-3.5 h-3.5 text-white fill-white ml-0.5" />
                         </div>

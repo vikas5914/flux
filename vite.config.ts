@@ -36,6 +36,38 @@ export default defineConfig({
       globPatterns: ['**/*.{js,css,html,svg,png,ico}'],
       cleanupOutdatedCaches: true,
       clientsClaim: true,
+      navigateFallback: 'index.html',
+      navigateFallbackAllowlist: [/^\/$/, /^\/title\//, /^\/watch\//],
+      runtimeCaching: [
+        {
+          urlPattern: /^https:\/\/image\.tmdb\.org\/.*/i,
+          handler: 'CacheFirst',
+          options: {
+            cacheName: 'tmdb-images',
+            expiration: {
+              maxEntries: 200,
+              maxAgeSeconds: 60 * 60 * 24 * 30,
+            },
+            cacheableResponse: {
+              statuses: [0, 200],
+            },
+          },
+        },
+        {
+          urlPattern: /^https:\/\/api\.themoviedb\.org\/.*/i,
+          handler: 'NetworkFirst',
+          options: {
+            cacheName: 'tmdb-api',
+            expiration: {
+              maxEntries: 100,
+              maxAgeSeconds: 60 * 60 * 24,
+            },
+            cacheableResponse: {
+              statuses: [0, 200],
+            },
+          },
+        },
+      ],
     },
 
     devOptions: {

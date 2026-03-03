@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+@import "@fontsource-variable/inter";
 
 :root {
   --color-accent: #f6821f;
@@ -13,7 +13,7 @@
   --color-text-primary: #ffffff;
   --color-text-secondary: #a1a1aa;
   --color-text-muted: #71717a;
-  --font-sans: "Inter", sans-serif;
+  --font-sans: "Inter Variable", "Inter", sans-serif;
   --section-padding-y: 128px;
   --container-padding-x: 24px;
   --container-max-width: 72rem;

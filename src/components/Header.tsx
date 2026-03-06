@@ -1,5 +1,7 @@
 import { Link } from "react-router-dom";
-import { Play } from "lucide-react";
+import { Play, LogIn, LogOut } from "lucide-react";
+import { useConvexAuth } from "convex/react";
+import { useAuthActions } from "@convex-dev/auth/react";
 
 interface HeaderProps {
   title?: string;
@@ -7,6 +9,9 @@ interface HeaderProps {
 }
 
 export function Header({ title, subtitle }: HeaderProps) {
+  const { isAuthenticated, isLoading } = useConvexAuth();
+  const { signIn, signOut } = useAuthActions();
+
   return (
     <header className="fixed top-0 left-0 right-0 z-50 h-14 bg-[#0a0a0a]/90 backdrop-blur-sm border-b border-[#1f1f1f]">
       <div className="max-w-6xl mx-auto px-6 h-full grid grid-cols-[1fr_auto_1fr] items-center">
@@ -24,10 +29,31 @@ export function Header({ title, subtitle }: HeaderProps) {
           <div />
         )}
 
-        <nav className="flex items-center gap-6 justify-self-end">
+        <nav className="flex items-center gap-4 justify-self-end">
           <Link to="/" className="text-sm text-[#a1a1aa] hover:text-white transition-colors">
             Home
           </Link>
+
+          {!isLoading &&
+            (isAuthenticated ? (
+              <button
+                onClick={() => void signOut()}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded text-xs font-medium bg-[#151515] border border-[#2a2a2a] text-[#a1a1aa] hover:border-[#3a3a3a] hover:text-white transition-colors"
+                title="Sign out"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Sign out</span>
+              </button>
+            ) : (
+              <button
+                onClick={() => void signIn("google")}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded text-xs font-medium bg-[#151515] border border-[#f6821f] text-[#f6821f] hover:bg-[#f6821f]/10 transition-colors"
+                title="Sign in to sync across devices"
+              >
+                <LogIn className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Sign in</span>
+              </button>
+            ))}
         </nav>
       </div>
     </header>

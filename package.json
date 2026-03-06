@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:convex": "convex dev",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "bun run build && wrangler dev",
@@ -13,10 +14,13 @@
     "fmt:check": "oxfmt --check"
   },
   "dependencies": {
+    "@auth/core": "0.37.0",
     "@cloudflare/vite-plugin": "^1.25.6",
+    "@convex-dev/auth": "^0.0.91",
     "@fontsource-variable/inter": "^5.2.8",
     "@tailwindcss/vite": "^4.2.1",
     "@tanstack/react-query": "^5.90.21",
+    "convex": "^1.32.0",
     "lucide-react": "^0.575.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",

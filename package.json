@@ -10,6 +10,7 @@
     "lint": "eslint .",
     "preview": "bun run build && wrangler dev",
     "deploy": "bun run build && wrangler deploy",
+    "all": "convex deploy -y && bun run build",
     "fmt": "oxfmt",
     "fmt:check": "oxfmt --check"
   },

@@ -78,7 +78,7 @@ function addLocalEntry(contentId: string, opts?: WatchHistoryUpdate) {
 // ---------------------------------------------------------------------------
 
 export function useWatchHistory() {
-  const { isAuthenticated } = useConvexAuth();
+  const { isAuthenticated, isLoading } = useConvexAuth();
 
   // --- localStorage state (always maintained as fallback) ---
   const [localEntries, setLocalEntries] = useState<WatchHistoryEntry[]>(readLocalEntries);
@@ -160,6 +160,7 @@ export function useWatchHistory() {
   );
 
   const ids = entries.map((e) => e.contentId);
+  const isReady = !isLoading && (!isAuthenticated || serverEntries !== undefined);
 
-  return { ids, entries, addToHistory, getEntry };
+  return { ids, entries, addToHistory, getEntry, isReady };
 }

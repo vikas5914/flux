@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, ChevronRight } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { Header } from "../components/Header";
 import {
   useWatchHistory,
@@ -184,6 +184,7 @@ interface WatchPlayerSessionProps {
   contentId: string;
   season?: string;
   episode?: string;
+  nextEpisodeHref: string | null;
   type: "movie" | "tv";
   tmdbId: number;
   initialProvider: string;
@@ -196,6 +197,7 @@ function WatchPlayerSession({
   contentId,
   season,
   episode,
+  nextEpisodeHref,
   type,
   tmdbId,
   initialProvider,
@@ -205,26 +207,9 @@ function WatchPlayerSession({
 }: WatchPlayerSessionProps) {
   const [activeProvider, setActiveProvider] = useState(initialProvider);
   const [resumeAtForLoad, setResumeAtForLoad] = useState(initialResumeAt);
-  const [pendingNavigation, setPendingNavigation] = useState<"details" | "next" | null>(null);
   const [loadedIframeKey, setLoadedIframeKey] = useState<string | null>(null);
   const iframeKey = `${contentId}-${activeProvider}-${season ?? ""}-${episode ?? ""}`;
   const isPlayerLoading = loadedIframeKey !== iframeKey;
-
-  const detailsHref = contentId ? `/title/${contentId}` : "/";
-  const nextEpisodeHref =
-    contentId && season && episode ? `/watch/${contentId}/${season}/${Number(episode) + 1}` : null;
-  const nextEpisodeTo = nextEpisodeHref ?? ".";
-
-  const handleLinkIntent = (target: "details" | "next") => (event: React.MouseEvent) => {
-    const isBlocked =
-      pendingNavigation !== null || (target === "next" && (isPlayerLoading || !nextEpisodeHref));
-    if (isBlocked) {
-      event.preventDefault();
-      return;
-    }
-
-    setPendingNavigation(target);
-  };
 
   // --- Playback progress tracking ---
   const progressRef = useRef<{ watchedTime: number; duration: number }>({
@@ -235,7 +220,7 @@ function WatchPlayerSession({
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const switchProvider = (id: string) => {
-    if (id === activeProvider || isPlayerLoading || pendingNavigation) return;
+    if (id === activeProvider || isPlayerLoading) return;
 
     setResumeAtForLoad(getResumeTimeForEntry(latestHistoryEntry, type, season, episode));
     setActiveProvider(id);
@@ -391,32 +376,13 @@ function WatchPlayerSession({
     <main className="pt-14">
       {/* Top bar — hidden on mobile, visible on sm+ */}
       <div className="hidden sm:block bg-[#111111] border-b border-[#1f1f1f]">
-        <div className="max-w-6xl mx-auto px-6 py-3 grid grid-cols-[auto_1fr_auto] items-center gap-4">
-          <Link
-            to={detailsHref}
-            onClick={handleLinkIntent("details")}
-            aria-busy={pendingNavigation === "details"}
-            aria-disabled={pendingNavigation !== null}
-            className="flex items-center gap-2 text-[#a1a1aa] hover:text-white transition-colors aria-disabled:opacity-70 aria-disabled:cursor-wait aria-disabled:pointer-events-none aria-disabled:hover:text-[#a1a1aa]"
-          >
-            {pendingNavigation === "details" ? (
-              <span className="w-4 h-4 rounded-full border border-current border-t-transparent animate-spin" />
-            ) : (
-              <ArrowLeft className="w-4 h-4" />
-            )}
-            <span className="text-sm">
-              {pendingNavigation === "details" ? "Opening..." : "Back"}
-            </span>
-          </Link>
-
+        <div className="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between gap-4">
           <div className="flex items-center justify-center gap-2">
             {PROVIDERS.map((item) => (
               <button
                 key={item.id}
                 onClick={() => switchProvider(item.id)}
-                disabled={
-                  pendingNavigation !== null || isPlayerLoading || activeProvider === item.id
-                }
+                disabled={isPlayerLoading || activeProvider === item.id}
                 aria-busy={isPlayerLoading && activeProvider === item.id}
                 className={`px-3 py-1.5 rounded text-xs font-medium transition-colors ${
                   activeProvider === item.id
@@ -434,20 +400,13 @@ function WatchPlayerSession({
             ))}
           </div>
 
-          {season && episode ? (
+          {nextEpisodeHref ? (
             <Link
-              to={nextEpisodeTo}
-              onClick={handleLinkIntent("next")}
-              aria-busy={pendingNavigation === "next"}
-              aria-disabled={pendingNavigation !== null || isPlayerLoading}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-medium bg-[#151515] border border-[#2a2a2a] text-[#a1a1aa] hover:border-[#f6821f] hover:text-[#f6821f] transition-colors aria-disabled:opacity-70 aria-disabled:cursor-wait aria-disabled:pointer-events-none aria-disabled:hover:border-[#2a2a2a] aria-disabled:hover:text-[#a1a1aa]"
+              to={nextEpisodeHref}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-medium bg-[#151515] border border-[#2a2a2a] text-[#a1a1aa] hover:border-[#f6821f] hover:text-[#f6821f] transition-colors"
             >
-              <span>{pendingNavigation === "next" ? "Opening..." : "Next Episode"}</span>
-              {pendingNavigation === "next" ? (
-                <span className="w-3.5 h-3.5 rounded-full border border-current border-t-transparent animate-spin" />
-              ) : (
-                <ChevronRight className="w-3.5 h-3.5" />
-              )}
+              <span>Next Episode</span>
+              <ChevronRight className="w-3.5 h-3.5" />
             </Link>
           ) : (
             <div />
@@ -482,28 +441,12 @@ function WatchPlayerSession({
         style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       >
         <div className="flex items-center justify-between gap-2 px-3 py-2">
-          <Link
-            to={detailsHref}
-            onClick={handleLinkIntent("details")}
-            aria-busy={pendingNavigation === "details"}
-            aria-disabled={pendingNavigation !== null}
-            className="flex items-center justify-center w-9 h-9 rounded bg-[#151515] border border-[#2a2a2a] text-[#a1a1aa] active:border-[#3a3a3a] active:text-white transition-colors aria-disabled:opacity-70 aria-disabled:cursor-wait aria-disabled:pointer-events-none"
-          >
-            {pendingNavigation === "details" ? (
-              <span className="w-4 h-4 rounded-full border border-current border-t-transparent animate-spin" />
-            ) : (
-              <ArrowLeft className="w-4 h-4" />
-            )}
-          </Link>
-
           <div className="flex items-center gap-1.5 flex-1 justify-center">
             {PROVIDERS.map((item) => (
               <button
                 key={item.id}
                 onClick={() => switchProvider(item.id)}
-                disabled={
-                  pendingNavigation !== null || isPlayerLoading || activeProvider === item.id
-                }
+                disabled={isPlayerLoading || activeProvider === item.id}
                 aria-busy={isPlayerLoading && activeProvider === item.id}
                 className={`px-2.5 py-1.5 rounded text-xs font-medium transition-colors ${
                   activeProvider === item.id
@@ -521,19 +464,12 @@ function WatchPlayerSession({
             ))}
           </div>
 
-          {season && episode ? (
+          {nextEpisodeHref ? (
             <Link
-              to={nextEpisodeTo}
-              onClick={handleLinkIntent("next")}
-              aria-busy={pendingNavigation === "next"}
-              aria-disabled={pendingNavigation !== null || isPlayerLoading}
-              className="flex items-center justify-center w-9 h-9 rounded bg-[#151515] border border-[#2a2a2a] text-[#a1a1aa] active:border-[#f6821f] active:text-[#f6821f] transition-colors aria-disabled:opacity-70 aria-disabled:cursor-wait aria-disabled:pointer-events-none"
+              to={nextEpisodeHref}
+              className="flex items-center justify-center w-9 h-9 rounded bg-[#151515] border border-[#2a2a2a] text-[#a1a1aa] active:border-[#f6821f] active:text-[#f6821f] transition-colors"
             >
-              {pendingNavigation === "next" ? (
-                <span className="w-4 h-4 rounded-full border border-current border-t-transparent animate-spin" />
-              ) : (
-                <ChevronRight className="w-4 h-4" />
-              )}
+              <ChevronRight className="w-4 h-4" />
             </Link>
           ) : (
             <div className="w-9" />
@@ -566,6 +502,20 @@ export default function WatchPage() {
       ? getResumeTimeForEntry(historyEntry, parsedType, season, episode)
       : undefined;
   const { data: content } = useWatchContentQuery(isValid ? contentId : undefined);
+  const currentSeasonNumber = toFiniteNumber(season);
+  const currentEpisodeNumber = toFiniteNumber(episode);
+  const currentSeason =
+    currentSeasonNumber != null
+      ? content?.seasons?.find((item) => item.seasonNumber === currentSeasonNumber)
+      : undefined;
+  const nextEpisodeHref =
+    contentId &&
+    currentSeasonNumber != null &&
+    currentEpisodeNumber != null &&
+    currentSeason &&
+    currentEpisodeNumber < (currentSeason.episodeCount ?? 0)
+      ? `/watch/${contentId}/${currentSeasonNumber}/${currentEpisodeNumber + 1}`
+      : null;
 
   useEffect(() => {
     if (!isValid) navigate("/");
@@ -590,6 +540,7 @@ export default function WatchPage() {
           contentId={contentId}
           season={season}
           episode={episode}
+          nextEpisodeHref={nextEpisodeHref}
           type={parsedType}
           tmdbId={parsedTmdbId}
           initialProvider={initialProvider}

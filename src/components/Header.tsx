@@ -52,10 +52,6 @@ export function Header({ title, subtitle }: HeaderProps) {
         )}
 
         <nav className="flex items-center gap-4 justify-self-end">
-          <Link to="/" className="text-sm text-[#a1a1aa] hover:text-white transition-colors">
-            Home
-          </Link>
-
           {!isLoading &&
             (isAuthenticated ? (
               <button

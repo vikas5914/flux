@@ -12,6 +12,7 @@ export default function DetailsPage() {
   const navigate = useNavigate();
   const [selectedEpisode, setSelectedEpisode] = useState<string | null>(null);
   const [userSelectedSeason, setUserSelectedSeason] = useState<number | null>(null);
+  const [pendingNavigation, setPendingNavigation] = useState<string | null>(null);
 
   const parsed = parseContentId(id!);
   const { data: details, isLoading, isError } = useContentDetailsQuery(id!);
@@ -49,11 +50,19 @@ export default function DetailsPage() {
   }
 
   const handleSeasonChange = (seasonNumber: number) => {
-    if (seasonNumber === userSelectedSeason) return;
+    if (seasonNumber === seasonToFetch || isSeasonLoading) return;
     setUserSelectedSeason(seasonNumber);
   };
 
   const handlePlay = (episodeId?: string) => {
+    if (pendingNavigation) return;
+
+    const navigationKey = episodeId ?? `content:${content.id}`;
+    setPendingNavigation(navigationKey);
+
+    // Reset after a short delay in case navigation doesn't unmount this component
+    setTimeout(() => setPendingNavigation(null), 2000);
+
     if (episodeId) {
       // Parse season and episode from format "s{season}e{episode}"
       const match = episodeId.match(/^s(\d+)e(\d+)$/);
@@ -143,10 +152,20 @@ export default function DetailsPage() {
                 onClick={() =>
                   handlePlay(content.type === "series" ? content.episodes?.[0]?.id : undefined)
                 }
-                className="inline-flex items-center gap-2 bg-white text-black px-6 py-2.5 rounded text-sm font-medium hover:bg-[#e5e5e5] transition-colors"
+                disabled={pendingNavigation !== null}
+                aria-busy={pendingNavigation === `content:${content.id}`}
+                className="inline-flex items-center gap-2 bg-white text-black px-6 py-2.5 rounded text-sm font-medium hover:bg-[#e5e5e5] transition-colors disabled:opacity-70 disabled:cursor-wait disabled:hover:bg-white"
               >
-                <Play className="w-4 h-4 fill-black" />
-                {content.type === "series" ? "Play First Episode" : "Play Now"}
+                {pendingNavigation === `content:${content.id}` ? (
+                  <span className="w-4 h-4 rounded-full border border-current border-t-transparent animate-spin" />
+                ) : (
+                  <Play className="w-4 h-4 fill-black" />
+                )}
+                {pendingNavigation === `content:${content.id}`
+                  ? "Opening..."
+                  : content.type === "series"
+                    ? "Play First Episode"
+                    : "Play Now"}
               </button>
             </div>
           </div>
@@ -207,14 +226,17 @@ export default function DetailsPage() {
                     <button
                       key={episode.id}
                       onClick={() => {
+                        if (pendingNavigation) return;
                         setSelectedEpisode(episode.id);
                         handlePlay(episode.id);
                       }}
+                      disabled={pendingNavigation !== null}
+                      aria-busy={pendingNavigation === episode.id}
                       className={`w-full flex items-center gap-3 sm:gap-4 p-3 sm:p-4 text-left transition-colors rounded ${
-                        selectedEpisode === episode.id
+                        pendingNavigation === episode.id || selectedEpisode === episode.id
                           ? "bg-[#151515] border border-[#2a2a2a]"
                           : "bg-[#0f0f0f] border border-[#1f1f1f] hover:bg-[#151515] hover:border-[#2a2a2a]"
-                      }`}
+                      } disabled:opacity-70 disabled:cursor-wait`}
                     >
                       <div className="shrink-0 w-8 text-center">
                         <span className="text-sm text-[#71717a]">{index + 1}</span>
@@ -240,7 +262,11 @@ export default function DetailsPage() {
                           {episode.duration}
                         </span>
                         <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
-                          <Play className="w-3.5 h-3.5 text-white fill-white ml-0.5" />
+                          {pendingNavigation === episode.id ? (
+                            <span className="w-3.5 h-3.5 rounded-full border border-white border-t-transparent animate-spin" />
+                          ) : (
+                            <Play className="w-3.5 h-3.5 text-white fill-white ml-0.5" />
+                          )}
                         </div>
                       </div>
                     </button>

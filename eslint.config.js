@@ -7,7 +7,7 @@ import { defineConfig, globalIgnores } from "eslint/config";
 import reactYouMightNotNeedAnEffect from "eslint-plugin-react-you-might-not-need-an-effect";
 
 export default defineConfig([
-  globalIgnores(["dist"]),
+  globalIgnores(["dist", "convex/_generated"]),
   {
     files: ["**/*.{ts,tsx}"],
     extends: [

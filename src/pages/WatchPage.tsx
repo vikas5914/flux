@@ -117,6 +117,31 @@ const MIN_SAVE_THRESHOLD = 5;
 /** Debounce interval for saving progress (ms) */
 const SAVE_DEBOUNCE_MS = 10_000;
 
+function toFiniteNumber(value: unknown): number | null {
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value === "string") {
+    const parsed = Number(value);
+    if (Number.isFinite(parsed)) return parsed;
+  }
+  return null;
+}
+
+function readProgressFromPayload(payload: Record<string, unknown>) {
+  const watched =
+    toFiniteNumber(payload.timestamp) ??
+    toFiniteNumber(payload.currentTime) ??
+    toFiniteNumber(payload.time) ??
+    toFiniteNumber(payload.watched) ??
+    toFiniteNumber(payload.position);
+  const duration =
+    toFiniteNumber(payload.duration) ??
+    toFiniteNumber(payload.totalDuration) ??
+    toFiniteNumber(payload.length);
+
+  if (watched === null || duration === null) return null;
+  return { watchedTime: watched, duration };
+}
+
 // --- Page ---
 
 export default function WatchPage() {
@@ -236,13 +261,11 @@ export default function WatchPage() {
       if (typeof raw === "string") {
         try {
           const parsed = JSON.parse(raw);
-          if (
-            parsed &&
-            typeof parsed.timestamp === "number" &&
-            typeof parsed.duration === "number"
-          ) {
-            const watched = parsed.timestamp;
-            const dur = parsed.duration;
+          if (parsed && typeof parsed === "object") {
+            const progress = readProgressFromPayload(parsed as Record<string, unknown>);
+            if (!progress) return;
+            const watched = progress.watchedTime;
+            const dur = progress.duration;
             progressRef.current = { watchedTime: watched, duration: dur };
 
             // Debounced save
@@ -278,8 +301,9 @@ export default function WatchPage() {
         for (const key of keys) {
           const item = mediaData[key];
           if (item?.progress) {
-            const { watched, duration: dur } = item.progress;
-            if (typeof watched === "number" && typeof dur === "number") {
+            const watched = toFiniteNumber(item.progress.watched);
+            const dur = toFiniteNumber(item.progress.duration);
+            if (watched !== null && dur !== null) {
               progressRef.current = { watchedTime: watched, duration: dur };
 
               // Debounced save — only save every SAVE_DEBOUNCE_MS
@@ -304,8 +328,10 @@ export default function WatchPage() {
       // Handle PLAYER_EVENT (VidLink + VidFast — timeupdate, pause, seeked, ended)
       if (data.type === "PLAYER_EVENT" && data.data) {
         const { event: eventType, currentTime, duration: dur } = data.data;
-        if (typeof currentTime === "number" && typeof dur === "number") {
-          progressRef.current = { watchedTime: currentTime, duration: dur };
+        const watched = toFiniteNumber(currentTime);
+        const duration = toFiniteNumber(dur);
+        if (watched !== null && duration !== null) {
+          progressRef.current = { watchedTime: watched, duration };
 
           // Save immediately on pause, seeked, or ended
           if (eventType === "pause" || eventType === "seeked" || eventType === "ended") {
@@ -313,7 +339,7 @@ export default function WatchPage() {
               clearTimeout(saveTimerRef.current);
               saveTimerRef.current = null;
             }
-            saveProgress(eventType === "ended" ? 0 : currentTime, dur, {
+            saveProgress(eventType === "ended" ? 0 : watched, duration, {
               force: eventType === "ended",
             });
           }

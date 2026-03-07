@@ -10,6 +10,8 @@ export default defineSchema({
     season: v.optional(v.string()),
     episode: v.optional(v.string()),
     provider: v.optional(v.string()),
+    watchedTime: v.optional(v.number()), // seconds watched into the episode/movie
+    duration: v.optional(v.number()), // total duration in seconds
     updatedAt: v.number(),
   })
     .index("by_user", ["userId", "updatedAt"])

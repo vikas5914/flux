@@ -5,6 +5,11 @@ import { tmdbKeys } from "../lib/query-keys";
 import { parseContentId, mapMovieToContent, mapTVToContent } from "../data/content";
 import { getMovieDetails, getTVDetails } from "../lib/tmdb";
 
+function getProgressPercentage(watchedTime?: number, duration?: number) {
+  if (!watchedTime || !duration || duration <= 0) return undefined;
+  return Math.min(100, Math.max(0, (watchedTime / duration) * 100));
+}
+
 export function ContinueWatching() {
   const { ids, getEntry } = useWatchHistory();
 
@@ -45,18 +50,22 @@ export function ContinueWatching() {
       <div className="flex gap-3 overflow-x-auto no-scrollbar sm:grid sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 sm:gap-4">
         {items.map((content) => {
           const isMovie = content.type === "movie";
-          let watchUrl: string;
-          if (isMovie) {
-            watchUrl = `/watch/${content.id}`;
-          } else {
-            const last = getEntry(content.id);
-            watchUrl = last
-              ? `/watch/${content.id}/${last.season}/${last.episode}`
+          const historyEntry = getEntry(content.id);
+          const progress = getProgressPercentage(historyEntry?.watchedTime, historyEntry?.duration);
+          const watchUrl = isMovie
+            ? `/watch/${content.id}`
+            : historyEntry?.season && historyEntry.episode
+              ? `/watch/${content.id}/${historyEntry.season}/${historyEntry.episode}`
               : `/title/${content.id}`;
-          }
+
           return (
             <div key={content.id} className="w-36 shrink-0 sm:w-auto sm:shrink">
-              <TitleCard content={content} linkTo={watchUrl} />
+              <TitleCard
+                content={content}
+                linkTo={watchUrl}
+                progress={progress}
+                showProgress={progress !== undefined}
+              />
             </div>
           );
         })}

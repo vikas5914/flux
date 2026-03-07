@@ -4,6 +4,19 @@ import { auth } from "./auth";
 
 const MAX_HISTORY_ITEMS = 20;
 
+function shouldResetProgress(
+  existing: { season?: string; episode?: string; watchedTime?: number; duration?: number } | null,
+  next: { season?: string; episode?: string; watchedTime?: number; duration?: number },
+) {
+  if (!existing) return false;
+  if (next.watchedTime !== undefined || next.duration !== undefined) return false;
+
+  const nextSeason = next.season ?? existing.season;
+  const nextEpisode = next.episode ?? existing.episode;
+
+  return nextSeason !== existing.season || nextEpisode !== existing.episode;
+}
+
 /**
  * Get the authenticated user's watch history, ordered by most recently watched.
  */
@@ -34,6 +47,8 @@ export const upsertWatchHistory = mutation({
     season: v.optional(v.string()),
     episode: v.optional(v.string()),
     provider: v.optional(v.string()),
+    watchedTime: v.optional(v.number()),
+    duration: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     const userId = await auth.getUserId(ctx);
@@ -49,10 +64,14 @@ export const upsertWatchHistory = mutation({
 
     if (existing) {
       // Update existing entry — merge fields (keep old values if new ones are undefined)
+      const resetProgress = shouldResetProgress(existing, args);
+
       await ctx.db.patch(existing._id, {
         season: args.season ?? existing.season,
         episode: args.episode ?? existing.episode,
         provider: args.provider ?? existing.provider,
+        watchedTime: args.watchedTime ?? (resetProgress ? 0 : existing.watchedTime),
+        duration: args.duration ?? (resetProgress ? 0 : existing.duration),
         updatedAt: now,
       });
     } else {
@@ -63,6 +82,8 @@ export const upsertWatchHistory = mutation({
         season: args.season,
         episode: args.episode,
         provider: args.provider,
+        watchedTime: args.watchedTime,
+        duration: args.duration,
         updatedAt: now,
       });
 
@@ -95,6 +116,8 @@ export const importWatchHistory = mutation({
         season: v.optional(v.string()),
         episode: v.optional(v.string()),
         provider: v.optional(v.string()),
+        watchedTime: v.optional(v.number()),
+        duration: v.optional(v.number()),
       }),
     ),
   },
@@ -122,6 +145,8 @@ export const importWatchHistory = mutation({
           season: entry.season,
           episode: entry.episode,
           provider: entry.provider,
+          watchedTime: entry.watchedTime,
+          duration: entry.duration,
           // Older entries get earlier timestamps to preserve order
           updatedAt: now - (args.entries.length - i),
         });

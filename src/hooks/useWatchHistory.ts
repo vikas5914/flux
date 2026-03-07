@@ -11,7 +11,11 @@ export interface WatchHistoryEntry {
   season?: string;
   episode?: string;
   provider?: string;
+  watchedTime?: number; // seconds into the video
+  duration?: number; // total duration in seconds
 }
+
+export type WatchHistoryUpdate = Omit<WatchHistoryEntry, "contentId">;
 
 // ---------------------------------------------------------------------------
 // localStorage helpers (fallback for unauthenticated users)
@@ -40,17 +44,27 @@ function writeLocalEntries(entries: WatchHistoryEntry[]) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
 }
 
-function addLocalEntry(
-  contentId: string,
-  opts?: { season?: string; episode?: string; provider?: string },
-) {
+function shouldResetProgress(existing?: WatchHistoryEntry, next?: WatchHistoryUpdate) {
+  if (!existing || !next) return false;
+  if (next.watchedTime !== undefined || next.duration !== undefined) return false;
+
+  const nextSeason = next.season ?? existing.season;
+  const nextEpisode = next.episode ?? existing.episode;
+
+  return nextSeason !== existing.season || nextEpisode !== existing.episode;
+}
+
+function addLocalEntry(contentId: string, opts?: WatchHistoryUpdate) {
   const localEntries = readLocalEntries();
   const existing = localEntries.find((e) => e.contentId === contentId);
+  const resetProgress = shouldResetProgress(existing, opts);
   const entry: WatchHistoryEntry = {
     contentId,
     season: opts?.season ?? existing?.season,
     episode: opts?.episode ?? existing?.episode,
     provider: opts?.provider ?? existing?.provider,
+    watchedTime: opts?.watchedTime ?? (resetProgress ? 0 : existing?.watchedTime),
+    duration: opts?.duration ?? (resetProgress ? 0 : existing?.duration),
   };
   const next = [entry, ...localEntries.filter((e) => e.contentId !== contentId)].slice(
     0,
@@ -97,18 +111,27 @@ export function useWatchHistory() {
   const entries: WatchHistoryEntry[] =
     isAuthenticated && serverEntries
       ? serverEntries.map(
-          (e: { contentId: string; season?: string; episode?: string; provider?: string }) => ({
+          (e: {
+            contentId: string;
+            season?: string;
+            episode?: string;
+            provider?: string;
+            watchedTime?: number;
+            duration?: number;
+          }) => ({
             contentId: e.contentId,
             season: e.season,
             episode: e.episode,
             provider: e.provider,
+            watchedTime: e.watchedTime,
+            duration: e.duration,
           }),
         )
       : localEntries;
 
   // --- addToHistory ---
   const addToHistory = useCallback(
-    (contentId: string, opts?: { season?: string; episode?: string; provider?: string }) => {
+    (contentId: string, opts?: WatchHistoryUpdate) => {
       // Always write to localStorage (offline fallback)
       addLocalEntry(contentId, opts);
       setLocalEntries(readLocalEntries());
@@ -120,6 +143,8 @@ export function useWatchHistory() {
           season: opts?.season,
           episode: opts?.episode,
           provider: opts?.provider,
+          watchedTime: opts?.watchedTime,
+          duration: opts?.duration,
         });
       }
     },

@@ -1,15 +1,17 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Play, LogIn, LogOut } from "lucide-react";
+import { ArrowLeft, Play, LogIn, LogOut } from "lucide-react";
 import { useConvexAuth } from "convex/react";
 import { useAuthActions } from "@convex-dev/auth/react";
 
 interface HeaderProps {
   title?: string;
   subtitle?: string;
+  backTo?: string;
+  backLabel?: string;
 }
 
-export function Header({ title, subtitle }: HeaderProps) {
+export function Header({ title, subtitle, backTo, backLabel = "Back" }: HeaderProps) {
   const { isAuthenticated, isLoading } = useConvexAuth();
   const { signIn, signOut } = useAuthActions();
   const [pendingAuth, setPendingAuth] = useState<"signin" | "signout" | null>(null);
@@ -37,10 +39,22 @@ export function Header({ title, subtitle }: HeaderProps) {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 h-14 bg-[#0a0a0a]/90 backdrop-blur-sm border-b border-[#1f1f1f]">
       <div className="max-w-6xl mx-auto px-6 h-full grid grid-cols-[1fr_auto_1fr] items-center">
-        <Link to="/" className="flex items-center gap-2 justify-self-start">
-          <Play aria-hidden="true" className="w-5 h-5 text-[#f6821f] fill-[#f6821f]" />
-          <span className="text-sm font-semibold tracking-tight">Flux</span>
-        </Link>
+        <div className="flex items-center gap-4 justify-self-start min-w-0">
+          {backTo ? (
+            <Link
+              to={backTo}
+              className="flex items-center gap-2 text-sm text-[#a1a1aa] hover:text-white transition-colors shrink-0"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span>{backLabel}</span>
+            </Link>
+          ) : null}
+
+          <Link to="/" className="flex items-center gap-2 min-w-0">
+            <Play aria-hidden="true" className="w-5 h-5 text-[#f6821f] fill-[#f6821f] shrink-0" />
+            <span className="text-sm font-semibold tracking-tight truncate">Flux</span>
+          </Link>
+        </div>
 
         {title ? (
           <div className="flex items-center gap-2 min-w-0">

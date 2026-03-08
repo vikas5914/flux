@@ -532,6 +532,7 @@ export default function WatchPage() {
       <Header
         title={content?.title}
         subtitle={season && episode ? `S${season} E${episode}` : undefined}
+        backTo={`/title/${contentId}`}
       />
 
       {isReady ? (

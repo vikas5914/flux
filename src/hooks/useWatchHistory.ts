@@ -44,6 +44,28 @@ function writeLocalEntries(entries: WatchHistoryEntry[]) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
 }
 
+function areEntriesEqual(a: WatchHistoryEntry[], b: WatchHistoryEntry[]) {
+  if (a.length !== b.length) return false;
+
+  for (let i = 0; i < a.length; i += 1) {
+    const left = a[i];
+    const right = b[i];
+
+    if (
+      left.contentId !== right.contentId ||
+      left.season !== right.season ||
+      left.episode !== right.episode ||
+      left.provider !== right.provider ||
+      left.watchedTime !== right.watchedTime ||
+      left.duration !== right.duration
+    ) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 function shouldResetProgress(existing?: WatchHistoryEntry, next?: WatchHistoryUpdate) {
   if (!existing || !next) return false;
   if (next.watchedTime !== undefined || next.duration !== undefined) return false;
@@ -88,6 +110,24 @@ export function useWatchHistory() {
   const upsertMutation = useMutation(api.watchHistory.upsertWatchHistory);
   const importMutation = useMutation(api.watchHistory.importWatchHistory);
   const hasMigrated = useRef(false);
+  const mappedServerEntries: WatchHistoryEntry[] =
+    serverEntries?.map(
+      (e: {
+        contentId: string;
+        season?: string;
+        episode?: string;
+        provider?: string;
+        watchedTime?: number;
+        duration?: number;
+      }) => ({
+        contentId: e.contentId,
+        season: e.season,
+        episode: e.episode,
+        provider: e.provider,
+        watchedTime: e.watchedTime,
+        duration: e.duration,
+      }),
+    ) ?? [];
 
   // Migrate localStorage -> Convex on first auth (one-time)
   useEffect(() => {
@@ -107,26 +147,25 @@ export function useWatchHistory() {
     }
   }, [isAuthenticated, importMutation]);
 
+  // Keep localStorage aligned with Convex so reloads have a fresh offline snapshot.
+  useEffect(() => {
+    if (!isAuthenticated || serverEntries === undefined) return;
+
+    setLocalEntries((previousEntries) => {
+      if (areEntriesEqual(previousEntries, mappedServerEntries)) {
+        return previousEntries;
+      }
+
+      writeLocalEntries(mappedServerEntries);
+      return mappedServerEntries;
+    });
+  }, [isAuthenticated, mappedServerEntries, serverEntries]);
+
   // --- Derive entries from the right source ---
-  const entries: WatchHistoryEntry[] =
-    isAuthenticated && serverEntries
-      ? serverEntries.map(
-          (e: {
-            contentId: string;
-            season?: string;
-            episode?: string;
-            provider?: string;
-            watchedTime?: number;
-            duration?: number;
-          }) => ({
-            contentId: e.contentId,
-            season: e.season,
-            episode: e.episode,
-            provider: e.provider,
-            watchedTime: e.watchedTime,
-            duration: e.duration,
-          }),
-        )
+  const entries: WatchHistoryEntry[] = isLoading
+    ? []
+    : isAuthenticated
+      ? mappedServerEntries
       : localEntries;
 
   // --- addToHistory ---

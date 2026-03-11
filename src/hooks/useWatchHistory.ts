@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useEffect, useRef, useMemo } from "react";
 import { useConvexAuth, useQuery, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 
@@ -95,6 +95,27 @@ function addLocalEntry(contentId: string, opts?: WatchHistoryUpdate) {
   writeLocalEntries(next);
 }
 
+function mergeEntriesPreferLocal(
+  localEntries: WatchHistoryEntry[],
+  serverEntries: WatchHistoryEntry[],
+) {
+  const seen = new Set<string>();
+  const merged: WatchHistoryEntry[] = [];
+
+  for (const entry of localEntries) {
+    merged.push(entry);
+    seen.add(entry.contentId);
+  }
+
+  for (const entry of serverEntries) {
+    if (!seen.has(entry.contentId)) {
+      merged.push(entry);
+    }
+  }
+
+  return merged.slice(0, MAX_ITEMS);
+}
+
 // ---------------------------------------------------------------------------
 // Public hook — uses Convex when authenticated, localStorage otherwise
 // ---------------------------------------------------------------------------
@@ -110,24 +131,27 @@ export function useWatchHistory() {
   const upsertMutation = useMutation(api.watchHistory.upsertWatchHistory);
   const importMutation = useMutation(api.watchHistory.importWatchHistory);
   const hasMigrated = useRef(false);
-  const mappedServerEntries: WatchHistoryEntry[] =
-    serverEntries?.map(
-      (e: {
-        contentId: string;
-        season?: string;
-        episode?: string;
-        provider?: string;
-        watchedTime?: number;
-        duration?: number;
-      }) => ({
-        contentId: e.contentId,
-        season: e.season,
-        episode: e.episode,
-        provider: e.provider,
-        watchedTime: e.watchedTime,
-        duration: e.duration,
-      }),
-    ) ?? [];
+  const mappedServerEntries: WatchHistoryEntry[] = useMemo(
+    () =>
+      serverEntries?.map(
+        (e: {
+          contentId: string;
+          season?: string;
+          episode?: string;
+          provider?: string;
+          watchedTime?: number;
+          duration?: number;
+        }) => ({
+          contentId: e.contentId,
+          season: e.season,
+          episode: e.episode,
+          provider: e.provider,
+          watchedTime: e.watchedTime,
+          duration: e.duration,
+        }),
+      ) ?? [],
+    [serverEntries],
+  );
 
   // Migrate localStorage -> Convex on first auth (one-time)
   useEffect(() => {
@@ -147,26 +171,33 @@ export function useWatchHistory() {
     }
   }, [isAuthenticated, importMutation]);
 
-  // Keep localStorage aligned with Convex so reloads have a fresh offline snapshot.
+  // Keep localStorage aligned with Convex while preserving optimistic local updates.
   useEffect(() => {
     if (!isAuthenticated || serverEntries === undefined) return;
 
     setLocalEntries((previousEntries) => {
-      if (areEntriesEqual(previousEntries, mappedServerEntries)) {
+      const mergedEntries = mergeEntriesPreferLocal(previousEntries, mappedServerEntries);
+      if (areEntriesEqual(previousEntries, mergedEntries)) {
         return previousEntries;
       }
 
-      writeLocalEntries(mappedServerEntries);
-      return mappedServerEntries;
+      writeLocalEntries(mergedEntries);
+      return mergedEntries;
     });
   }, [isAuthenticated, mappedServerEntries, serverEntries]);
 
+  const authenticatedEntries = useMemo(
+    () =>
+      serverEntries === undefined ? [] : mergeEntriesPreferLocal(localEntries, mappedServerEntries),
+    [serverEntries, localEntries, mappedServerEntries],
+  );
+
   // --- Derive entries from the right source ---
-  const entries: WatchHistoryEntry[] = isLoading
-    ? []
-    : isAuthenticated
-      ? mappedServerEntries
-      : localEntries;
+  const entries: WatchHistoryEntry[] = useMemo(() => {
+    if (isLoading) return [];
+    if (isAuthenticated) return authenticatedEntries;
+    return localEntries;
+  }, [isLoading, isAuthenticated, authenticatedEntries, localEntries]);
 
   // --- addToHistory ---
   const addToHistory = useCallback(

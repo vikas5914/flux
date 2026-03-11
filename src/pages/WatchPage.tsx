@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
-import { ChevronRight } from "lucide-react";
+import { ArrowLeft, ChevronRight } from "lucide-react";
 import { Header } from "../components/Header";
 import {
   useWatchHistory,
@@ -210,6 +210,7 @@ function WatchPlayerSession({
   const [loadedIframeKey, setLoadedIframeKey] = useState<string | null>(null);
   const iframeKey = `${contentId}-${activeProvider}-${season ?? ""}-${episode ?? ""}`;
   const isPlayerLoading = loadedIframeKey !== iframeKey;
+  const detailsHref = `/title/${contentId}`;
 
   // --- Playback progress tracking ---
   const progressRef = useRef<{ watchedTime: number; duration: number }>({
@@ -376,7 +377,15 @@ function WatchPlayerSession({
     <main className="pt-14">
       {/* Top bar — hidden on mobile, visible on sm+ */}
       <div className="hidden sm:block bg-[#111111] border-b border-[#1f1f1f]">
-        <div className="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between gap-4">
+        <div className="max-w-6xl mx-auto px-6 py-3 grid grid-cols-[auto_1fr_auto] items-center gap-4">
+          <Link
+            to={detailsHref}
+            className="flex items-center gap-2 text-[#a1a1aa] hover:text-white transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span className="text-sm">Back</span>
+          </Link>
+
           <div className="flex items-center justify-center gap-2">
             {PROVIDERS.map((item) => (
               <button
@@ -441,6 +450,13 @@ function WatchPlayerSession({
         style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       >
         <div className="flex items-center justify-between gap-2 px-3 py-2">
+          <Link
+            to={detailsHref}
+            className="flex items-center justify-center w-9 h-9 rounded bg-[#151515] border border-[#2a2a2a] text-[#a1a1aa] active:border-[#3a3a3a] active:text-white transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+          </Link>
+
           <div className="flex items-center gap-1.5 flex-1 justify-center">
             {PROVIDERS.map((item) => (
               <button
@@ -532,7 +548,6 @@ export default function WatchPage() {
       <Header
         title={content?.title}
         subtitle={season && episode ? `S${season} E${episode}` : undefined}
-        backTo={`/title/${contentId}`}
       />
 
       {isReady ? (

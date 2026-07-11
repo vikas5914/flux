@@ -39,49 +39,30 @@ Example: `/media/tmdb-movie-875828-...` → `/watch/movie-875828`.
 
 ## Two independent pieces
 
-### Piece 1 — Flux Worker (this repo)
+### Piece 1 — Client-side redirect route (this repo)
 
-Flux is currently a pure SPA served by Cloudflare Static Assets
-(`wrangler.jsonc`, `not_found_handling: "single-page-application"`, no Worker
-script). We add a minimal Worker that fires **only** for `/media/*` and issues a
-real `301`.
+Flux is a pure SPA served by Cloudflare Static Assets
+(`wrangler.jsonc`, `not_found_handling: "single-page-application"`). Non-asset
+paths already serve `index.html`, so `/media/...` reaches React Router with no
+infrastructure change. We add a redirect route rather than a Worker.
 
-**Why a server-side 301, not a React route:** Google holds the legacy URLs. A
-server 301 passes ranking signal and updates the canonical URL in the index; a
-client-side redirect is a soft 200 that does not. SEO preservation is the whole
-point.
+> **Note:** A server-side 301 (Cloudflare Worker) would be marginally better for
+> SEO — it passes ranking signal and updates the canonical URL in Google's index,
+> whereas a client-side redirect is a soft 200 + JS navigation. We deliberately
+> chose the simpler client-side route: the legacy URL set is small and the added
+> Worker + `run_worker_first` config wasn't worth the complexity.
 
-**New file `src/worker/index.ts`:**
+**New file `src/pages/LegacyMediaRedirect.tsx`:**
 
-- Regex-match the path: `^/media/tmdb-(movie|tv)-(\d+)(?:-.*)?$`.
-- On match → `Response.redirect` (301):
+- Route `/media/:slug` added in `src/App.tsx`.
+- Regex-match the slug: `^tmdb-(movie|tv)-(\d+)(?:-.*)?$`.
+- On match → `<Navigate replace>`:
   - `movie` → `/watch/movie-{tmdbId}`
   - `tv` → `/title/tv-{tmdbId}`
-  Preserve the original query string. Emit an absolute URL built from the
-  request origin.
-- On no match → `env.ASSETS.fetch(request)` (safety fallback; in practice only
-  `/media/*` reaches the Worker).
-
-**`wrangler.jsonc` additions:**
-
-```jsonc
-"main": "./src/worker/index.ts",
-"assets": {
-  "not_found_handling": "single-page-application",
-  "binding": "ASSETS",
-  "run_worker_first": ["/media/*"]
-}
-```
-
-`run_worker_first: ["/media/*"]` is essential. Per Cloudflare docs, in SPA mode
-every non-asset path returns `index.html` (200) and the Worker is bypassed
-unless the path is explicitly opted into worker-first routing. Everything outside
-`/media/*` keeps today's exact behavior.
+- On no match → `<Navigate replace to="/">` (home).
 
 **Redirect target:** `movie-*` → watch page (as chosen); `tv-*` → details page
 (forced by the `WatchPage` validity check above).
-
-**Type of `env`:** minimal `interface Env { ASSETS: Fetcher }`.
 
 ### Piece 2 — `sudo` → `flux` domain forwarding (Cloudflare dashboard/API)
 
@@ -111,10 +92,11 @@ This piece will be applied via the Cloudflare API MCP against the existing rule.
 
 ## Verification
 
-- Unit-level: assert the path-parsing regex maps representative movie/tv legacy
-  URLs to the correct `/watch/...` target and ignores non-matching paths.
-- End-to-end: `curl -sI https://flux.kapadiya.net/media/tmdb-movie-875828-x`
-  returns `301` with `Location: /watch/movie-875828`; a normal SPA route
-  (e.g. `/title/movie-875828`) still returns the app.
+- Unit-level: the slug-parsing maps representative movie/tv legacy URLs to the
+  correct target and falls back to `/` for non-matching slugs.
+- SPA serving: `/media/...` returns `200` + `index.html` so React Router can
+  route it.
+- End-to-end: loading `flux.kapadiya.net/media/tmdb-movie-875828-x` in a browser
+  lands on `/watch/movie-875828`; a `tv-*` legacy URL lands on `/title/tv-{id}`.
 - Confirm the updated `sudo` rule preserves path via
   `curl -sI https://sudo.kapadiya.net/media/tmdb-movie-875828-x`.

@@ -2,6 +2,7 @@ import { Routes, Route } from "react-router-dom";
 import HomePage from "./pages/HomePage";
 import DetailsPage from "./pages/DetailsPage";
 import WatchPage from "./pages/WatchPage";
+import LegacyMediaRedirect from "./pages/LegacyMediaRedirect";
 import { PWAUpdatePrompt } from "./components/PWAUpdatePrompt";
 
 function App() {
@@ -11,6 +12,7 @@ function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/title/:id" element={<DetailsPage />} />
         <Route path="/watch/:contentId/:season?/:episode?" element={<WatchPage />} />
+        <Route path="/media/:slug" element={<LegacyMediaRedirect />} />
       </Routes>
       <PWAUpdatePrompt />
     </>

@@ -15,8 +15,15 @@ function useDebouncedValue(value: string, delay = 300): string {
   return debouncedValue;
 }
 
-export function useSearchQuery() {
-  const [query, setQuery] = useState("");
+export function useSearchQuery(initialQuery = "") {
+  const [query, setQuery] = useState(initialQuery);
+
+  // Keep local state in sync when the route-provided initial query changes
+  // (e.g. /browse/inception → /browse/matrix).
+  useEffect(() => {
+    setQuery(initialQuery);
+  }, [initialQuery]);
+
   const debouncedQuery = useDebouncedValue(query, 300);
   const trimmed = debouncedQuery.trim();
 

@@ -5,17 +5,24 @@ import { Header } from "../components/Header";
 import { Spinner } from "../components/Spinner";
 import { useContentDetailsQuery } from "../hooks/useContentDetailsQuery";
 import { useSeasonQuery } from "../hooks/useSeasonQuery";
+import { formatPageTitle, useDocumentTitle } from "../hooks/useDocumentTitle";
 import { parseContentId } from "../data/content";
 
-export default function DetailsPage() {
-  const { id } = useParams<{ id: string }>();
+export interface DetailsPageProps {
+  /** Override route param — used by legacy `/media/...` routes. */
+  id?: string;
+}
+
+export default function DetailsPage(props: DetailsPageProps = {}) {
+  const params = useParams<{ id: string }>();
+  const id = props.id ?? params.id;
   const navigate = useNavigate();
   const [selectedEpisode, setSelectedEpisode] = useState<string | null>(null);
   const [userSelectedSeason, setUserSelectedSeason] = useState<number | null>(null);
   const [pendingNavigation, setPendingNavigation] = useState<string | null>(null);
 
-  const parsed = parseContentId(id!);
-  const { data: details, isLoading, isError } = useContentDetailsQuery(id!);
+  const parsed = id ? parseContentId(id) : null;
+  const { data: details, isLoading, isError } = useContentDetailsQuery(id ?? "");
 
   // Scroll to top on mount
   useEffect(() => {
@@ -32,6 +39,8 @@ export default function DetailsPage() {
 
   // Use season-specific content for TV, otherwise the initial details content
   const content = details?.tvShow && seasonContent ? seasonContent : (details?.content ?? null);
+
+  useDocumentTitle(content?.title ? formatPageTitle(content.title) : null);
 
   if (isLoading) {
     return (

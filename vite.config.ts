@@ -20,13 +20,16 @@ export default defineConfig({
       },
 
       manifest: {
-        name: "Flux — Watch Movies & Series",
-        short_name: "Flux",
-        description: "Search and stream movies & TV series",
-        theme_color: "#0a0a0a",
-        background_color: "#0a0a0a",
+        // Brand/SEO parity with the former sudo.kapadiya.net (smov / sudo-flix)
+        name: "sudo-flix",
+        short_name: "sudo-flix",
+        description: "Watch your favorite shows and movies for free with no ads ever! (っ'ヮ'c)",
+        theme_color: "#120f1d",
+        background_color: "#120f1d",
         display: "standalone",
         start_url: "/",
+        lang: "en",
+        scope: "/",
         icons: [
           { src: "pwa-64x64.png", sizes: "64x64", type: "image/png" },
           { src: "pwa-192x192.png", sizes: "192x192", type: "image/png" },

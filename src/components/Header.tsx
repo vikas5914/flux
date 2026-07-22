@@ -39,7 +39,7 @@ export function Header({ title, subtitle }: HeaderProps) {
       <div className="max-w-6xl mx-auto px-6 h-full grid grid-cols-[1fr_auto_1fr] items-center">
         <Link to="/" className="flex items-center gap-2 justify-self-start">
           <Play aria-hidden="true" className="w-5 h-5 text-[#f6821f] fill-[#f6821f]" />
-          <span className="text-sm font-semibold tracking-tight">Flux</span>
+          <span className="text-sm font-semibold tracking-tight">sudo-flix</span>
         </Link>
 
         {title ? (

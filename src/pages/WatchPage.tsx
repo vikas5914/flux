@@ -8,6 +8,7 @@ import {
   type WatchHistoryUpdate,
 } from "../hooks/useWatchHistory";
 import { useWatchContentQuery } from "../hooks/useWatchContentQuery";
+import { useDocumentTitle } from "../hooks/useDocumentTitle";
 import { parseContentId } from "../data/content";
 
 // --- Provider system ---
@@ -496,12 +497,22 @@ function WatchPlayerSession({
   );
 }
 
-export default function WatchPage() {
-  const { contentId, season, episode } = useParams<{
+export interface WatchPageProps {
+  /** Override route params — used by legacy `/media/...` routes. */
+  contentId?: string;
+  season?: string;
+  episode?: string;
+}
+
+export default function WatchPage(props: WatchPageProps = {}) {
+  const params = useParams<{
     contentId: string;
     season?: string;
     episode?: string;
   }>();
+  const contentId = props.contentId ?? params.contentId;
+  const season = props.season ?? params.season;
+  const episode = props.episode ?? params.episode;
   const navigate = useNavigate();
   const { addToHistory, getEntry, isReady } = useWatchHistory();
 
@@ -532,6 +543,13 @@ export default function WatchPage() {
     currentEpisodeNumber < (currentSeason.episodeCount ?? 0)
       ? `/watch/${contentId}/${currentSeasonNumber}/${currentEpisodeNumber + 1}`
       : null;
+
+  const documentTitle =
+    content?.title && season && episode
+      ? `${content.title} - S${season} E${episode}`
+      : content?.title;
+
+  useDocumentTitle(documentTitle);
 
   useEffect(() => {
     if (!isValid) navigate("/");

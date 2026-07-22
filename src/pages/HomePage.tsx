@@ -1,13 +1,27 @@
+import { useParams, useSearchParams } from "react-router-dom";
 import { Header } from "../components/Header";
 import { HeroSection } from "../components/HeroSection";
 import { ContinueWatching } from "../components/ContinueWatching";
 import { TrendingSection } from "../components/TrendingSection";
 import { SearchResultsSection } from "../components/SearchResultsSection";
 import { useSearchQuery } from "../hooks/useSearchQuery";
+import { useDocumentTitle } from "../hooks/useDocumentTitle";
 
+/**
+ * Home / search. Also handles legacy sudo-flix browse URLs:
+ *   /browse/:query?
+ *   /browse/?q=...
+ *   /s/:query  (quick-search alias, routed here)
+ */
 export default function HomePage() {
-  const { query, setQuery, results, isLoading } = useSearchQuery();
+  const { query: pathQuery } = useParams<{ query?: string }>();
+  const [searchParams] = useSearchParams();
+  const initialQuery = (pathQuery ?? searchParams.get("q") ?? "").trim();
+
+  const { query, setQuery, results, isLoading } = useSearchQuery(initialQuery);
   const hasQuery = query.trim().length > 0;
+
+  useDocumentTitle(hasQuery ? `${query.trim()} - sudo-flix` : "sudo-flix");
 
   return (
     <div className="min-h-screen bg-[#0a0a0a]">

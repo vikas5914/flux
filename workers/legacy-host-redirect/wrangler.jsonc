@@ -2,6 +2,7 @@
   "$schema": "../../node_modules/wrangler/config-schema.json",
   "name": "flux-legacy-redirect",
   "main": "index.ts",
+  "account_id": "1f032eb58af6df633b05878a2abb915d",
   "compatibility_date": "2026-03-03",
   "observability": {
     "enabled": true,

@@ -7,6 +7,17 @@
   },
   "assets": {
     "not_found_handling": "single-page-application",
+    // Default ("auto-trailing-slash") 307s /index.html -> /. The service
+    // worker's NavigationRoute is bound to "index.html", so on a precache miss
+    // it falls back to fetching /index.html, follows that redirect, and hands
+    // the page a response with `redirected: true`. Navigation requests use
+    // redirect mode "manual", so the browser rejects it:
+    //   "a redirected response was used for a request whose redirect mode is
+    //    not follow"
+    // and the navigation dies. "none" serves assets at their exact paths, so
+    // nothing redirects; unmatched routes still fall through to the SPA
+    // handler above.
+    "html_handling": "none",
   },
   "compatibility_flags": ["nodejs_compat"],
 }

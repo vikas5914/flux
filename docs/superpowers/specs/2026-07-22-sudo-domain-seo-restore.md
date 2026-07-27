@@ -77,6 +77,53 @@ In-browser:
 - `/media/tmdb-tv-…` opens details without rewriting to `/title/…`.
 - `/browse/inception` pre-fills search.
 
+## Follow-up (2026-07-28): stale service worker on `flux.kapadiya.net`
+
+Step 4's 301 broke every browser that had visited flux.kapadiya.net before the
+cutover. The app's Workbox worker is still registered on that origin; it answers
+navigations from `navigateFallback: /index.html`, that fetch now 301s
+cross-origin to sudo.kapadiya.net, sudo sends no `Access-Control-Allow-Origin`,
+and the FetchEvent rejects:
+
+```
+Access to fetch at 'https://sudo.kapadiya.net/index.html' (redirected from
+'https://flux.kapadiya.net/index.html') ... blocked by CORS policy
+The FetchEvent for "https://flux.kapadiya.net/media/tmdb-tv-615-futurama"
+resulted in a network error response: the promise was rejected.
+```
+
+It cannot self-heal — a service worker script behind a redirect is rejected by
+spec, so the update check fails forever. Serving the live app's `/sw.js` there
+does not help either: its install precaches `/index.html` and `/assets/*` on the
+legacy origin, which all 301 cross-origin and fail CORS, so install rejects and
+the broken registration survives.
+
+Fix: `workers/legacy-host-redirect/` — a **separate** Worker that owns
+flux.kapadiya.net, serving a self-unregistering tombstone worker at `/sw.js` and
+301ing everything else. Separate rather than folded into the app Worker because
+that would need `assets.run_worker_first`, turning every free static-asset
+request on the canonical host into a billed invocation.
+
+Ops steps (none of this is done by deploying the app):
+
+1. Remove the Cloudflare edge redirect rule for `flux.kapadiya.net/*` — Redirect
+   Rules, Bulk Redirects and Page Rule forwarding all run *before* Workers and
+   would shadow this Worker. The new Worker does the 301 instead.
+2. Detach `flux.kapadiya.net` from the `flux` Worker (Workers & Pages → flux →
+   Settings → Domains & Routes).
+3. `bun run deploy:legacy-host` — attaches it as a custom domain on
+   `flux-legacy-redirect`.
+
+Verify:
+
+```bash
+curl -sI https://flux.kapadiya.net/media/tmdb-tv-615-futurama | head -3  # 301 → sudo
+curl -s  https://flux.kapadiya.net/sw.js | head -2                       # tombstone, not Workbox
+```
+
+Affected browsers need one or two reloads: the stale worker must complete an
+update check, install the tombstone, and let it activate.
+
 ## Out of scope
 
 - Full smov feature set (discover, settings, scrape player, etc.).

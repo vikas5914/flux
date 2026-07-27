@@ -1,0 +1,14 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "flux-legacy-redirect",
+  "main": "index.ts",
+  "compatibility_date": "2026-03-03",
+  "observability": {
+    "enabled": true,
+  },
+  // Takes over the retired host. `flux.kapadiya.net` must first be detached
+  // from the `flux` Worker (Workers & Pages → flux → Settings → Domains &
+  // Routes), and the edge redirect rule for it removed — Redirect Rules run
+  // before Workers.
+  "routes": [{ "pattern": "flux.kapadiya.net", "custom_domain": true }],
+}

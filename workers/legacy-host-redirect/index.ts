@@ -1,9 +1,11 @@
 /**
- * Redirect worker for the retired `flux.kapadiya.net` host.
+ * Redirect worker for the retired `flux.kapadiya.net` and `sudo.kapadiya.net`
+ * hosts.
  *
- * The app moved to `sudo.kapadiya.net` to recover that domain's Google
- * rankings (docs/superpowers/specs/2026-07-22-sudo-domain-seo-restore.md).
- * `flux.kapadiya.net` now exists only to 301 its remaining traffic across.
+ * The app now lives only on its workers.dev URL. Both old hosts exist solely to
+ * 301 their traffic there, path and query intact, so Google transfers their
+ * rankings via Search Console's change of address instead of dropping them.
+ * Keep them attached here for at least a year after the move.
  *
  * This is deliberately a *separate* Worker from the app in `wrangler.jsonc`.
  * Putting the redirect in the app Worker would require
@@ -11,17 +13,17 @@
  * canonical host — free and Worker-less today — into a billed invocation.
  * The dead host should carry that cost, not the live one.
  *
- * NOTE: this Worker only runs if the Cloudflare edge redirect rule for
- * `flux.kapadiya.net/*` is removed. Redirect Rules, Bulk Redirects and Page
+ * NOTE: this Worker only runs if no Cloudflare edge redirect rule matches the
+ * retired hosts. Redirect Rules, Bulk Redirects and Page
  * Rule forwarding all execute *before* Workers, so an edge rule shadows this
  * entirely.
  *
  * ## Why `/sw.js` is special-cased
  *
- * Browsers that visited flux.kapadiya.net before the cutover still have the
+ * Browsers that visited a retired host before the cutover still have the
  * app's Workbox service worker registered on that origin. It answers every
  * in-scope navigation from its precache / `navigateFallback: /index.html`, and
- * that fetch now 301s cross-origin to sudo.kapadiya.net, which sends no
+ * that fetch now 301s cross-origin to the canonical host, which sends no
  * `Access-Control-Allow-Origin`. The fetch is CORS-blocked, the FetchEvent
  * rejects, and the navigation dies with a network error:
  *
@@ -41,15 +43,15 @@
  * network and land on the canonical host.
  */
 
-const CANONICAL_ORIGIN = "https://sudo.kapadiya.net";
+const CANONICAL_ORIGIN = "https://flux.marcus5914.workers.dev";
 const SERVICE_WORKER_PATH = "/sw.js";
 
 /**
  * Tombstone service worker. Kept dependency-free, and free of backticks and
  * `${` so it survives being a template literal here.
  */
-const KILL_SWITCH_SW = `// Tombstone worker for the retired flux.kapadiya.net origin.
-// Unregisters the stale Workbox worker left behind by the move to sudo.kapadiya.net.
+const KILL_SWITCH_SW = `// Tombstone worker for a retired kapadiya.net origin.
+// Unregisters the stale Workbox worker left behind by the move to flux.marcus5914.workers.dev.
 self.addEventListener("install", function () {
   self.skipWaiting();
 });

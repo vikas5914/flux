@@ -7,11 +7,13 @@
   "observability": {
     "enabled": true,
   },
-  // Takes over the retired hosts. Each must first be detached from the `flux`
-  // Worker (Workers & Pages → flux → Settings → Domains & Routes), and any edge
-  // redirect rule for it removed — Redirect Rules run before Workers.
+  // Takes over the retired hosts. Each must first be detached from its app
+  // Worker, `flux` or `flux-v2` (Workers & Pages → <app> → Settings → Domains &
+  // Routes), and any edge redirect rule for it removed — Redirect Rules run
+  // before Workers.
   "routes": [
     { "pattern": "flux.kapadiya.net", "custom_domain": true },
     { "pattern": "sudo.kapadiya.net", "custom_domain": true },
+    { "pattern": "flux-v2.kapadiya.net", "custom_domain": true },
   ],
 }

@@ -1,8 +1,8 @@
 /**
- * Redirect worker for the retired `flux.kapadiya.net` and `sudo.kapadiya.net`
- * hosts.
+ * Redirect worker for the retired kapadiya.net hosts of Flux (`sudo`, `flux`)
+ * and Flux v2 (`flux-v2`).
  *
- * The app now lives only on its workers.dev URL. Both old hosts exist solely to
+ * Each app now lives only on its workers.dev URL. The old hosts exist solely to
  * 301 their traffic there, path and query intact, so Google transfers their
  * rankings via Search Console's change of address instead of dropping them.
  * Keep them attached here for at least a year after the move.
@@ -43,7 +43,12 @@
  * network and land on the canonical host.
  */
 
-const CANONICAL_ORIGIN = "https://flux.marcus5914.workers.dev";
+const FLUX_ORIGIN = "https://flux.marcus5914.workers.dev";
+const ORIGIN_BY_HOST: Record<string, string> = {
+  "sudo.kapadiya.net": FLUX_ORIGIN,
+  "flux.kapadiya.net": FLUX_ORIGIN,
+  "flux-v2.kapadiya.net": "https://flux-v2.marcus5914.workers.dev",
+};
 const SERVICE_WORKER_PATH = "/sw.js";
 
 /**
@@ -74,8 +79,10 @@ self.addEventListener("activate", function (event) {
 export default {
   fetch(request: Request): Response {
     const url = new URL(request.url);
+    const origin = ORIGIN_BY_HOST[url.hostname] ?? FLUX_ORIGIN;
 
-    if (url.pathname === SERVICE_WORKER_PATH) {
+    // Flux v2 never registered a service worker, so only Flux hosts need the tombstone.
+    if (origin === FLUX_ORIGIN && url.pathname === SERVICE_WORKER_PATH) {
       return new Response(KILL_SWITCH_SW, {
         headers: {
           "content-type": "text/javascript; charset=utf-8",
@@ -84,6 +91,6 @@ export default {
       });
     }
 
-    return Response.redirect(`${CANONICAL_ORIGIN}${url.pathname}${url.search}`, 301);
+    return Response.redirect(`${origin}${url.pathname}${url.search}`, 301);
   },
 };

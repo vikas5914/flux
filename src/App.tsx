@@ -30,6 +30,9 @@ function App() {
         {/* Legacy media URLs — serve content at the same path (no domain hop) */}
         <Route path="/media/:slug" element={<LegacyMediaRedirect />} />
         <Route path="/media/:slug/:season/:episode" element={<LegacyMediaRedirect />} />
+
+        {/* Unknown paths, incl. legacy /discover/more/{list}/{type} lists Google still crawls */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       <PWAUpdatePrompt />
     </>

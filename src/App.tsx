@@ -4,6 +4,7 @@ import DetailsPage from "./pages/DetailsPage";
 import WatchPage from "./pages/WatchPage";
 import LegacyMediaRedirect from "./pages/LegacyMediaRedirect";
 import { PWAUpdatePrompt } from "./components/PWAUpdatePrompt";
+import { useCanonicalUrl } from "./hooks/useCanonicalUrl";
 
 /** Legacy `/search/:type/:query?` → `/browse/:query` (or home). */
 function LegacySearchRedirect() {
@@ -13,6 +14,8 @@ function LegacySearchRedirect() {
 }
 
 function App() {
+  useCanonicalUrl();
+
   return (
     <>
       <Routes>
